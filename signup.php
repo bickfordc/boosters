@@ -1,6 +1,11 @@
 <?php // Example 26-5: signup.php
   require_once 'header.php';
 
+  if (!$loggedin) 
+  {
+      header("Location: login.php");
+  }
+  
   echo <<<_END
   <script>
     function userExists(user)

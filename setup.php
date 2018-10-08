@@ -119,18 +119,18 @@ EOF;
     
     postgres_query($sql);
     
-    $sql =<<<EOF
-    CREATE TABLE IF NOT EXISTS sw_card_reloads
-      (card varchar(30),
-       reload_date timestamp,
-       reload_amount money,
-       store_number varchar(4),
-       store_location varchar(40),
-       PRIMARY KEY (card, reload_date, reload_amount)
-      );
-EOF;
+//    $sql =<<<EOF
+//    CREATE TABLE IF NOT EXISTS sw_card_reloads
+//      (card varchar(30),
+//       reload_date timestamp,
+//       reload_amount money,
+//       store_number varchar(4),
+//       store_location varchar(40),
+//       PRIMARY KEY (card, reload_date, reload_amount)
+//      );
+//EOF;
     
-    postgres_query($sql);
+//   postgres_query($sql);
     
     $sql =<<<EOF
     CREATE TABLE IF NOT EXISTS scrip_orders
@@ -150,7 +150,7 @@ EOF;
 EOF;
     
     postgres_query($sql);
-            
+   
   function postgres_query($sql) {
     $ret = pg_query($sql);
     if(!$ret){
