@@ -178,7 +178,7 @@
             $numFields = count($row);
             $cardNumber = $row[1];           // 2nd field is card number.
             $match = preg_match("/^[0-9]{2}-[0-9]{4}-[0-9]{4}-[0-9]$/", $cardNumber);
-            if ($numFields == 6 && $match == 1)
+            if ($numFields >= 6 && $match == 1)
             {
                 $isValid = true;
             }
