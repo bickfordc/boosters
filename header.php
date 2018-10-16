@@ -32,8 +32,11 @@
            "<li><a href='index.php'>STUDENTS</a>" .
              "<ul><li><a href='studentData.php'>Edit students</a></li>" .
              "</ul></li>" .
-           "<li><a href='index.php'>REPORTS</a>" .
-             "<ul><li><a href='reloads.php'>Record monthly card reloads</a></li>" .
+           "<li><a href='index.php'>TRANSACTIONS</a>" .
+             "<ul><li><a href='reloads.php'>Import card reloads</a></li>" .
+             "<li><a href='reloads.php'>Show card reloads</a></li>" .
+             "<li><a href='reloads.php'>Make a student withdrawal</a></li>" .
+             "<li><a href='reloads.php'>Show student withdrawals</a></li>" .
              "</ul></li>" .
   	   "<li><a href='#'>$user</a>"  .
              "<ul><li><a href='changePassword.php'>Change Password</a></li>" .

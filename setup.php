@@ -55,6 +55,7 @@ EOF;
        first varchar(32),
        last varchar(32) NOT NULL,
        email varchar(80),
+       balance numeric(10, 2),
        active boolean DEFAULT TRUE
       );
 EOF;
@@ -110,7 +111,7 @@ EOF;
     CREATE TABLE IF NOT EXISTS ks_card_reloads
       (card varchar(30),
        reload_date timestamp,
-       reload_amount money,
+       reload_amount numeric(10, 2),
        original_invoice_number varchar(15),
        original_invoice_date date,
        PRIMARY KEY (card, reload_date, reload_amount)
