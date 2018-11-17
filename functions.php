@@ -15,7 +15,7 @@
   }
   
   
-  $appname = "kscards"; 
+  $appname = "boosters"; 
 
   $db = pg_connect("$host $port $dbname $credentials");
   
