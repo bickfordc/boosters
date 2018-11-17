@@ -53,9 +53,11 @@ EOF;
     CREATE TABLE IF NOT EXISTS students
       (id SERIAL PRIMARY KEY,
        first varchar(32),
+       middle varchar(32),
        last varchar(32) NOT NULL,
        email varchar(80),
        balance numeric(10, 2),
+       graduation_year smallint,
        active boolean DEFAULT TRUE
       );
 EOF;
@@ -66,10 +68,13 @@ EOF;
     CREATE TABLE IF NOT EXISTS cards
       (id varchar(30) PRIMARY KEY,
        sold boolean DEFAULT FALSE,
+       sell_date date,
        card_holder varchar(80),
        notes varchar(80),
        active boolean DEFAULT TRUE,
-       donor_code char(2) 
+       donor_code char(2),
+       invoice_number varchar(30),
+       order_date date
       );       
 EOF;
     
@@ -110,7 +115,7 @@ EOF;
     $sql =<<<EOF
     CREATE TABLE IF NOT EXISTS ks_card_reloads
       (card varchar(30),
-       reload_date timestamp,
+       reload_date date,
        reload_amount numeric(10, 2),
        original_invoice_number varchar(15),
        original_invoice_date date,
