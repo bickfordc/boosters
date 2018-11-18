@@ -30,13 +30,14 @@
              "<li><a href='cardData.php'>Show cards</a></li>" .
              "</ul></li>" .
            "<li><a href='index.php'>STUDENTS</a>" .
-             "<ul><li><a href='studentData.php'>Show students</a></li>" .
+             "<ul><li><a href='addStudent.php'>Add a student</a></li>" .
+             "<li><a href='studentData.php'>Show students</a></li>" .
              "</ul></li>" .
            "<li><a href='index.php'>TRANSACTIONS</a>" .
              "<ul><li><a href='reloads.php'>Import card reloads</a></li>" .
-             "<li><a href='reloads.php'>Show card reloads</a></li>" .
-             "<li><a href='reloads.php'>Make a student withdrawal</a></li>" .
-             "<li><a href='reloads.php'>Show student withdrawals</a></li>" .
+             "<li><a href='reloadData.php'>Show card reloads</a></li>" .
+             "<li><a href='withdrawal.php'>Make a student withdrawal</a></li>" .
+             "<li><a href='withdrawalData.php'>Show student withdrawals</a></li>" .
              "</ul></li>" .
   	   "<li><a href='#'>$user</a>"  .
              "<ul><li><a href='changePassword.php'>Change Password</a></li>" .
