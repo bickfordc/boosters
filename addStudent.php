@@ -10,10 +10,27 @@ if (!$loggedin)
 $error = "";
 $pageMsg = "Under construction";
 
-echo <<<_END
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-<p class='pageMessage'>$pageMsg</p>
-        
-</body>
-</html>
+    $first = sanitizeString($_POST[ 'first' ]);
+    $middle = sanitizeString($_POST[ 'middle' ]);
+    $last = sanitizeString($_POST[ 'last' ]);
+}
+    $pageMsg = $first . $middle . $last;
+    
+  echo <<<_END
+    <p class='pageMessage'>$pageMsg</p>      
+    <div>
+     <div class='form'>
+      <form method='post' action='addStudent.php' autocomplete='off'>$error
+       <input type='text' placeholder='first name' name='first' value='$first'/>
+       <div data-tip="Use a middle name or initial if necessary to distinguish among common names.">
+         <input type='text' placeholder='middle name (optional)' name='middle' value='$middle'/>
+       </div>
+       <input type='text' placeholder='last name' name='last' value='$last'/>
+       <button>submit</button>
+      </form>
+     </div>
+    </div>
 _END;
+  
