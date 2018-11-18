@@ -28,10 +28,20 @@
             }
 
             $cards = array();
+            $invoice;
+            $orderDate;
+            $firstRow = true;
             while (!feof($file))
             {
                 $row = fgetcsv($file, 300, ",");
 
+                if ($firstRow) {
+                    // should be the invoice number and order date
+                    $invoice = $row[0];
+                    $orderDate = $row[1];
+                    $firstRow = false;
+                    continue;
+                }
                 $cardNumber = $row[0];
 
                 if ($cardNumber == NULL) {
@@ -54,7 +64,7 @@
             }
             fclose($file);
 
-            $numCardsAdded = commitCards($cards);
+            $numCardsAdded = commitCards($cards, $invoice, $orderDate);
             $successMsg = "Successfully addded " . $numCardsAdded . " cards.";            
         } 
         catch(Exception $e) {
@@ -75,18 +85,17 @@
           <img src='img/excel-example.png'>
         </div>
         <div style="float:left;width:467px;height:823px;margin:10px"> 
-          <p>To add new cards in bulk, use Excel to create a single column of 
-             card numbers as shown on the left. Save the file as 
-             CSV (Comma delimited) (*.csv)<br><br>
-             Excel has an annoying habit of changing any string of digits with 
-             more than 12 digits to scientific notation. To avoid this, add a space
-             after the 12th digit of a Safeway card number like this;<br>
-             603953500106 2607985<br><br>
-             With King Soopers cards, enter them with spaces just as they 
-             appear on the card like this;<br>
-             6006495903 177 095 385<br><br>
-             Instead of Excel, you may also use any text editor and place one card number 
-             on each line. Save the file as .csv
+          <p>To add new cards in bulk, use Excel to prepare the data as shown 
+             on the left. The first row must contain the Invoice # and Order Date.
+             On the remaining rows, enter the card numbers with spaces as shown.
+             Save the file as CSV (Comma delimited) (*.csv)<br><br>
+             Or instead of Excel, you may also use any text editor and create
+             input data like this;<br>
+             <div class="textexample">
+             KSI226797,11/14/2018<br>
+             6006495903 337 679 821<br>
+             6006495903 337 679 839<br> </div>
+             Save the file with a .csv extension.
           </p>
         </div>
         <div style="float:left;width:467px;height:423px;margin:10px"> 
@@ -116,7 +125,7 @@ _END;
         return $cardType;
     }
     
-    function commitCards($cards) {
+    function commitCards($cards, $invoice, $orderDate) {
         
         $numCardsAdded = 0;
         $isSold = 'f';
@@ -130,8 +139,8 @@ _END;
             $donorCode = calculateCardType($card);
             $formattedCardNumber = formatCardNumber($card, $donorCode);
 
-            if (!pg_query_params("INSERT INTO cards (id, sold, donor_code) VALUES ($1, $2, $3)",
-                    array($formattedCardNumber, $isSold, $donorCode))) {
+            if (!pg_query_params("INSERT INTO cards (id, sold, donor_code, invoice_number, order_date) VALUES ($1, $2, $3, $4, $5)",
+                    array($formattedCardNumber, $isSold, $donorCode, $invoice, $orderDate))) {
                 
                 $error = pg_last_error();
                 pg_query("ROLLBACK");

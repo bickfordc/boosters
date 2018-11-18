@@ -24,13 +24,13 @@
         echo "<nav>" .
          "<ul class='nav'>" .
   	   "<li><a href='index.php'>CARDS</a>" .
-             "<ul><li><a href='newCards.php'>Add new unsold cards</a></li>" .
+             "<ul><li><a href='newCards.php'>Add new cards</a></li>" .
              "<li><a href='sellCards.php'>Assign a card to a student</a></li>" .
              "<li><a href='unassignCards.php'>Unassign a card</a></li>" .
-             "<li><a href='cardData.php'>Edit cards</a></li>" .
+             "<li><a href='cardData.php'>Show cards</a></li>" .
              "</ul></li>" .
            "<li><a href='index.php'>STUDENTS</a>" .
-             "<ul><li><a href='studentData.php'>Edit students</a></li>" .
+             "<ul><li><a href='studentData.php'>Show students</a></li>" .
              "</ul></li>" .
            "<li><a href='index.php'>TRANSACTIONS</a>" .
              "<ul><li><a href='reloads.php'>Import card reloads</a></li>" .

@@ -9,9 +9,7 @@ if (!$loggedin)
 
 $error = "";
 $pageMsg = "Begin typing a student name or card number to search. <em>TIP: Try typing " .
-           "just the last 3 or 4 digits of a card.</em><br>" .
-           "Note that King Soopers cards only use the last 11 digits and are of the form " .
-           "01-2345-6789-0";
+           "just the last 3 or 4 digits of a card.</em><br>";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 

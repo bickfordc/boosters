@@ -302,6 +302,10 @@ div.container {
 	cursor: pointer;
 }
 
+.textexample {
+    font-family: Courier;
+    font-size: small;
+}
 /* ToolTips */
 
 [data-tip] {
