@@ -2,7 +2,6 @@
 
     require_once 'header.php';
   
-
     if (isset($_GET['email']))
     {
         $email = sanitizeString($_GET['email']);

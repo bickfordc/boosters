@@ -118,4 +118,23 @@
         return $formattedCardNumber;  
     }
     
+ function getStudentIdByName($first, $middle, $last) {
+    
+    if (empty($middle)) {
+        $result = queryPostgres("SELECT id FROM students WHERE first=$1 AND last=$2", array($first, $last));
+        
+    } elseif (!empty($middle)) {
+        $result = queryPostgres("SELECT id FROM students WHERE first=$1 AND middle=$2 AND last=$3", array($first, $middle, $last));
+
+    } else {
+        return NULL;
+    }
+    
+    if (($row = pg_fetch_array($result)) === false) {
+        return NULL;
+    }
+    else {
+        return $row["id"];
+    }
+}
 ?>

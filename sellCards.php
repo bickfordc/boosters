@@ -21,8 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!empty($student) && !empty($cardNumber)) {
         $first = "";
         $last = "";
+        $middle = ""; //TODO account for middle name.
         parseStudentName($student, $first, $last);
-        $studentId = getStudentIdByName($first, $last);
+        $studentId = getStudentIdByName($first, $middle, $last);
         if ($studentId == NULL) {
             $pageMsg = "Card assignment failed:<br>" .
                        "Student " . $first . " " . $last . " not found.";
@@ -98,26 +99,6 @@ function assignCardToStudent($studentId, $cardNumber, $cardHolder, &$errorMsg) {
     } 
     
     return $returnVal;
-}
-
-function getStudentIdByName($first, $last) {
-    
-    if (empty($first) && !empty($last)) {
-        $result = queryPostgres("SELECT id FROM students WHERE last=$1", array($last));
-        
-    } elseif (!empty($first) && !empty($last)) {
-        $result = queryPostgres("SELECT id FROM students WHERE first=$1 AND last=$2", array($first, $last));
-
-    } else {
-        return NULL;
-    }
-    
-    if (($row = pg_fetch_array($result)) === false) {
-        return NULL;
-    }
-    else {
-        return $row["id"];
-    }
 }
 
 function parseStudentName($fullName, &$first, &$last) {

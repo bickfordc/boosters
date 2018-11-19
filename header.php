@@ -10,18 +10,21 @@
     $user     = $_SESSION['user'];
     $loggedin = TRUE;
   }
-  else $loggedin = FALSE;
+  else {
+      $loggedin = FALSE;
+  }
   
-  echo "<title>$appname</title><link rel='stylesheet' " .
-       "href='styles.css' type='text/css'>" .
-       "</head><body><center><canvas id='logo' width='624' "    .
-       "height='200'>$appname</canvas></center>"                .
+  echo "<title>$appname</title><link rel='stylesheet' href='styles.css' type='text/css'>" .
        "<script src='https://code.jquery.com/jquery-2.2.1.min.js'></script>" .
-       "<script src='javascript.js'></script>";
-
-  if ($loggedin)
-  {
-        echo "<nav>" .
+       "<script src='javascript.js'></script>" .
+       "</head><body>";
+  
+  if (!$loggedin) {
+      echo "<center><canvas id='logo' width='624' height='200'>$appname</canvas></center>";
+  }
+  else {
+  //if ($loggedin) {
+         echo "<nav>" .
          "<ul class='nav'>" .
   	   "<li><a href='index.php'>CARDS</a>" .
              "<ul><li><a href='newCards.php'>Add new cards</a></li>" .

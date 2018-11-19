@@ -15,8 +15,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $first = sanitizeString($_POST[ 'first' ]);
     $middle = sanitizeString($_POST[ 'middle' ]);
     $last = sanitizeString($_POST[ 'last' ]);
+    
+    $studentId = getStudentIdByName($first, $middle, $last);
+    if ($studentId == NULL) {
+        $result = queryPostgres("INSERT INTO students (first, middle, last) VALUES ($1, $2, $3)", 
+            array($first, $middle, $last)); 
+        
+        $pageMsg = "Added student " . $first . " " . $middle . " " . $last;
+    } else {
+        $pageMsg = "<span class='error'>Student " . $first . " " . $middle . " " . $last . " already exists.</span>";
+    }
 }
-    $pageMsg = $first . $middle . $last;
+    
     
   echo <<<_END
     <p class='pageMessage'>$pageMsg</p>      
