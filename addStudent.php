@@ -8,7 +8,7 @@ if (!$loggedin)
 }
 
 $error = "";
-$pageMsg = "Under construction";
+$message = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -16,21 +16,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $middle = sanitizeString($_POST[ 'middle' ]);
     $last = sanitizeString($_POST[ 'last' ]);
     
-    $studentId = getStudentIdByName($first, $middle, $last);
-    if ($studentId == NULL) {
-        $result = queryPostgres("INSERT INTO students (first, middle, last) VALUES ($1, $2, $3)", 
-            array($first, $middle, $last)); 
+    if (!empty($first) && !empty($last)) {
+    
+        $studentId = getStudentIdByName($first, $middle, $last);
+        if ($studentId == NULL) {
+            $result = queryPostgres("INSERT INTO students (first, middle, last) VALUES ($1, $2, $3)", 
+                array($first, $middle, $last)); 
         
-        $pageMsg = "Added student " . $first . " " . $middle . " " . $last;
+            $message = "Added student " . $first . " " . $middle . " " . $last;
+        } else {
+            $message = "<span class='error'>Student " . $first . " " . $middle . " " . $last . " already exists.</span>";
+        }
     } else {
-        $pageMsg = "<span class='error'>Student " . $first . " " . $middle . " " . $last . " already exists.</span>";
+        $error = "<span class='error'>Provide at least a first and last name</span>";
     }
 }
     
-    
   echo <<<_END
-    <p class='pageMessage'>$pageMsg</p>      
     <div>
+     <p class='pageMessage'>$message</p>
      <div class='form'>
       <form method='post' action='addStudent.php' autocomplete='off'>$error
        <input type='text' placeholder='first name' name='first' value='$first'/>

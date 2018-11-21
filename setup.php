@@ -56,7 +56,7 @@ EOF;
        middle varchar(32),
        last varchar(32) NOT NULL,
        email varchar(80),
-       balance numeric(10, 2),
+       balance numeric(10, 2) DEFAULT 0.00,
        graduation_year smallint,
        active boolean DEFAULT TRUE
       );

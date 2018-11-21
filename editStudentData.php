@@ -17,20 +17,22 @@ if ($op === "add") {
 function addStudent() {
     $first = sanitizeString($_POST['first']);
     $last = sanitizeString($_POST['last']);
+    $middle = sanitizeString($_POST['middle']);
     $active = sanitizeString($_POST['active']);
     
-    $result = queryPostgres("INSERT INTO students (first, last, active) VALUES ($1, $2, $3)", 
-            array($first, $last, $active)); 
+    $result = queryPostgres("INSERT INTO students (first, middle, last, active) VALUES ($1, $2, $3, $4)", 
+            array($first, $middle, $last, $active)); 
 }
 
 function editStudent() {
     $first = sanitizeString($_POST['first']);
+    $middle = sanitizeString($_POST['middle']);
     $last = sanitizeString($_POST['last']);
     $active = sanitizeString($_POST['active']);
     $id = sanitizeString($_POST['id']);
     
-    $result = queryPostgres("UPDATE students SET first=$1, last=$2, active=$3 WHERE id=$4", 
-            array($first, $last, $active, $id)); 
+    $result = queryPostgres("UPDATE students SET first=$1, middle=$2, last=$3, active=$4 WHERE id=$5", 
+            array($first, $middle, $last, $active, $id)); 
 }
 
 function delStudent() {

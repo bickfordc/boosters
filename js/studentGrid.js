@@ -4,13 +4,15 @@ $(function () {
         url: "getStudentData.php",
         datatype: "xml",
         mtype: "GET",
-        colNames: ["Id", "First", "Last", "Active"],
+        colNames: ["Id", "First name", "Middle name", "Last name", "Balance", "Active"],
         colModel: [
             { name: "id", width: 55 },
             { name: "first", width: 200, editable: true },
+            { name: "middle", width: 100, editable: true },
             { name: "last", width: 200, editable: true },
-            { name: "active", width: 50, editable: true, formatter: "checkbox", 
-              edittype: "checkbox",
+            { name: "balance", width: 75, editable: false, align: "right" },
+            { name: "active", width: 50, editable: true, align: "right", 
+              formatter: "checkbox", edittype: "checkbox",
               editoptions: { value: "true:false"} 
             }
             //{ name: "total", width: 80, align: "right" },
@@ -32,7 +34,7 @@ $(function () {
         subGridUrl: "getStudentCards.php",
         subGridModel: [
             {
-                name: ["Cards"],
+                name: ["King Soopers Cards"],
                 width: [80],
                 align: ["left"]
                 //params: ["id"]

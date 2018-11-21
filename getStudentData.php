@@ -45,10 +45,10 @@ else
 
     $where = getWhereClause();
     
-    $sql = "SELECT id, first, last, active FROM students $where ORDER BY $sidx $sord OFFSET $start LIMIT $limit";
+    $sql = "SELECT id, first, middle, last, balance, active FROM students $where ORDER BY $sidx $sord OFFSET $start LIMIT $limit";
     $result = queryPostgres($sql, array());
     
-    $countResult = queryPostgres("SELECT id, first, last, active FROM students $where", array());
+    $countResult = queryPostgres("SELECT id, first, middle, last, balance, active FROM students $where", array());
     $count = pg_num_rows($countResult);
     
     if( $count > 0 && $limit > 0) { 
@@ -75,7 +75,9 @@ else
         $s .= "<row id='". $row['id']."'>";            
         $s .= "<cell>". $row['id']."</cell>";
         $s .= "<cell><![CDATA[". $row['first']."]]></cell>";
+        $s .= "<cell><![CDATA[". $row['middle']."]]></cell>";
         $s .= "<cell><![CDATA[". $row['last']."]]></cell>";
+        $s .= "<cell>". $row['balance']."</cell>";
         $active = $row['active'] == 't' ? "true" : "false";
         $s .= "<cell>".$active."</cell>";
         $s .= "</row>";
