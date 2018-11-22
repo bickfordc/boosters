@@ -3,9 +3,10 @@
     require 'vendor/autoload.php';
     
     require_once 'header.php';
-    require_once 'RebateReport.php';
-    require_once 'RebatePercentages.php';
-    require_once 'ScripFamily.php';
+    require_once 'orm/KsReload.php';
+    //require_once 'RebateReport.php';
+    //require_once 'RebatePercentages.php';
+    //require_once 'ScripFamily.php';
      
     if (!$loggedin) die();
 
@@ -45,7 +46,30 @@
             if ($file == NULL)
             {
                 throw new Exception("Could not open file $name");
-            }  
+            }
+            
+            $transactions = array();
+            while (!feof($file))
+            {
+ 
+                $row = fgetcsv($file, 300, ",");
+                $row = fgetcsv($file, 300, ",");
+                $row = fgetcsv($file, 300, ","); // third row starts the data
+                $transactionDate = $row[0];
+                
+                $ksReload = new KsReload(
+                        $row[6], // card
+                        $row[0], // transaction date
+                        $row[2], // invoice #
+                        $row[3], // invoice date
+                        $row[5]  // amount
+                );
+                
+                $transactions[] = $ksReload;
+            }
+            foreach ($transactions as $trans) {
+                queryPostgres($trans->getSqlInsertStr(), $trans->getSqlInsertArgs());
+            }
         }
         catch(Exception $e) {
             $pageMessage = "";
