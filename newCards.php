@@ -2,6 +2,9 @@
 
     require_once 'header.php';
     
+    // Handle Mac OS X line endings (LF) on uploaded .csv files
+    ini_set("auto_detect_line_endings", true);
+    
     $successMsg;
     $errorMsg;
     $formError;

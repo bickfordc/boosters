@@ -37,8 +37,8 @@
              "<li><a href='studentData.php'>Show students</a></li>" .
              "</ul></li>" .
            "<li><a href='index.php'>TRANSACTIONS</a>" .
-             "<ul><li><a href='reloads.php'>Import card reloads</a></li>" .
-             "<li><a href='reloadData.php'>Show card reloads</a></li>" .
+             "<ul><li><a href='ksReloads.php'>Import KS card reloads</a></li>" .
+             "<li><a href='ksReloadData.php'>Show KS card reloads</a></li>" .
              "<li><a href='withdrawal.php'>Make a student withdrawal</a></li>" .
              "<li><a href='withdrawalData.php'>Show student withdrawals</a></li>" .
              "</ul></li>" .
