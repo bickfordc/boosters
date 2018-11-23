@@ -57,21 +57,7 @@
       $salt2="Git76";    
       return hash("ripemd128", "$salt1$pw$salt2");
   }
-  
-  function showProfile($user)
-  {
-    if (file_exists("$user.jpg"))
-      echo "<img src='$user.jpg' style='float:left;'>";
-
-    $result = queryPostgres("SELECT * FROM profiles WHERE usr=$1", array($user));
-
-    if (pg_num_rows($result))
-    {
-      $row = pg_fetch_array($result);
-      echo stripslashes($row['text']) . "<br style='clear:left;'><br>";
-    }
-  }
-  
+    
     function validateAndChangePassword($user, $newPw1, $newPw2, &$error)
     {
         $passwordChanged = false;

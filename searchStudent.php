@@ -12,7 +12,7 @@ $result = queryPostgres("SELECT * FROM students WHERE UPPER(first) LIKE UPPER('%
 
 while($row = pg_fetch_array($result))
 {
-    $array[$row['id']] = $row['first'] . " " .$row['last'];
+    $array[$row['id']] = $row['first'] . " " . $row['middle'] . " " .$row['last'];
 }
 echo json_encode($array);
 

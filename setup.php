@@ -52,7 +52,7 @@ EOF;
     $sql =<<<EOF
     CREATE TABLE IF NOT EXISTS students
       (id SERIAL PRIMARY KEY,
-       first varchar(32),
+       first varchar(32) NOT NULL,
        middle varchar(32),
        last varchar(32) NOT NULL,
        email varchar(80),

@@ -49,13 +49,17 @@
             }
             
             $transactions = array();
+            $rowNumber = 0;
             while (!feof($file))
             {
- 
-                $row = fgetcsv($file, 300, ",");
-                $row = fgetcsv($file, 300, ",");
-                $row = fgetcsv($file, 300, ","); // third row starts the data
-                $transactionDate = $row[0];
+                $row = fgetcsv($file, 300, ","); 
+                if (($rowNumber += 1) < 3) {  // third row starts the data
+                   continue;
+                }
+                
+                if ($row[0] == NULL) {
+                    continue;
+                }
                 
                 $ksReload = new KsReload(
                         $row[6], // card
@@ -68,8 +72,16 @@
                 $transactions[] = $ksReload;
             }
             foreach ($transactions as $trans) {
-                queryPostgres($trans->getSqlInsertStr(), $trans->getSqlInsertArgs());
+                if (($studentId = $trans->getStudentId()) != NULL) {
+                    
+                }
+//                $result = pg_query_params($trans->getSqlInsertStr(), $trans->getSqlInsertArgs());
+//                if (!$result) 
+//                {
+//                    throw new Exception(pg_last_error()); 
+//                }
             }
+            $successMsg = count($transactions) . " transactions imported.";
         }
         catch(Exception $e) {
             $pageMessage = "";

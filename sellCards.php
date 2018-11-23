@@ -21,8 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!empty($student) && !empty($cardNumber)) {
         $first = "";
         $last = "";
-        $middle = ""; //TODO account for middle name.
-        parseStudentName($student, $first, $last);
+        $middle = ""; 
+        try {
+        parseStudentName($student, $first, $middle, $last);
         $studentId = getStudentIdByName($first, $middle, $last);
         if ($studentId == NULL) {
             $pageMsg = "Card assignment failed:<br>" .
@@ -37,7 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $pageMsg = "Card assignment failed.<br>" . $errorMsg;
             }
-        }   
+        }
+        } catch (Exception $ex) {
+            $pageMsg = "Card assignment failed.<br>" . $ex->getMessage();
+        }
     } else {
         $error = "Provide a student and a card.";
     }
@@ -68,54 +72,81 @@ _END;
 
 function assignCardToStudent($studentId, $cardNumber, $cardHolder, &$errorMsg) {
     
-    $returnVal = true;
     $errorMsg = "";
-    pg_query("BEGIN");
-    
-    $result = pg_query_params("UPDATE cards SET sold='t' WHERE id=$1", array($cardNumber)); 
-    if (!$result) {
-       $errorMsg = pg_last_error();
-       $returnVal = false;
-    }
+    $sql;
+    $args;
     
     if (!empty($cardHolder)) {
-        $result = pg_query_params("UPDATE cards SET card_holder=$1 WHERE id=$2", array($cardHolder, $cardNumber));
-        if (!$result) {
-            $errorMsg .= pg_last_error();
-            $returnVal = false;
+        $sql = "UPDATE cards SET sold='t', card_holder=$1 WHERE id=$2";
+        $args = array($cardHolder, $cardNumber);
+    } else {
+        $sql = "UPDATE cards SET sold='t' WHERE id=$1";
+        $args = array($cardNumber);
+    }
+    
+    try {
+        $result = pg_query_params("SELECT sold from cards WHERE id=$1", array($cardNumber));
+        if (!result) {
+            throw new Exception(pg_last_error());
         }
+        else {
+            if (pg_fetch_result($result, 0, "sold") == "t") {
+                throw new Exception("Card $cardNumber is already assigned. Unassign the card first.");
+            }
+        }
+        
+        pg_query("BEGIN");
+
+        $result = pg_query_params($sql, $args);
+        if ($result) {
+            $affectedRows = pg_affected_rows($result);
+            if ($affectedRows == 0) {
+                throw new Exception("Card " . $cardNumber . " was not found");
+            }
+        }
+        if (!$result) {
+           throw new Exception(pg_last_error());
+        }
+
+        $result = pg_query_params("INSERT INTO student_cards VALUES ($1, $2)", array($studentId, $cardNumber));
+        if (!$result) {
+            throw new Exception(pg_last_error());
+        }
+
+        $result = pg_query("COMMIT");
+        if (!$result) {
+            throw new Exception(pg_last_error());
+        } 
+    } catch (Exception $e)
+    {
+        $errorMsg = $e->getMessage();
+        return FALSE;
     }
-    
-    $result = pg_query_params("INSERT INTO student_cards VALUES ($1, $2)", array($studentId, $cardNumber));
-    if (!$result) {
-        $errorMsg .= pg_last_error();
-        $returnVal = false;
-    }
-    
-    $result = pg_query("COMMIT");
-    if (!$result) {
-        $errorMsg .= pg_last_error(); 
-        $returnVal = false;
-    } 
-    
-    return $returnVal;
+    return TRUE;
 }
 
-function parseStudentName($fullName, &$first, &$last) {
+function parseStudentName($fullName, &$first, &$middle, &$last) {
     
     $first = "";
+    $middle = "";
     $last = "";
-    
+        
     $parts = preg_split('/\s+/', $fullName);
     $len = count($parts);
-    if ($len >= 1) {
-        // We consider the last element to be the last name
-        $last = $parts[$len - 1];
-        
-        // And all preceding elements make up the first name
-        for ($i = 0; $i < $len - 1; $i++) {
-            $first .= $parts[$i] . " ";
-        }
-        $first = trim($first);
+    
+    if ($len < 2) {
+        throw new Exception("Must have at least a first and last name");
+    } 
+    elseif ($len == 2) {
+        $first =$parts[0];
+        $last = $parts[1];
+    } 
+    elseif ($len == 3) {
+        $first =$parts[0];
+        $middle = $parts[1];
+        $last = $parts[2];    
+    } 
+    else {
+        throw new Exception("Invalid name $fullName");
     }
 }

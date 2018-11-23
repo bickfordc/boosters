@@ -76,6 +76,23 @@ class KsReload {
         return $args;
     }
     
+    /**
+     * Get the ID of the student that the card is assigned to.
+     * @return int student ID, or NULL if card is not assigned
+     * 
+     */
+    public function getStudentId() {
+        $result = queryPostgres("SELECT * FROM student_cards WHERE card=$1", array($this->card));
+        if (($row = pg_fetch_array($result)) === false)
+        {
+            return NULL;
+        }
+        else
+        {
+            return $row["student"];
+        }
+    }
+    
     private function formatCardNumber($cardNumber) {
         
         // strip everything but digits

@@ -12,20 +12,26 @@ $message = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $first = sanitizeString($_POST[ 'first' ]);
-    $middle = sanitizeString($_POST[ 'middle' ]);
-    $last = sanitizeString($_POST[ 'last' ]);
+    $first = trim(sanitizeString($_POST[ 'first' ]));
+    $middle = trim(sanitizeString($_POST[ 'middle' ]));
+    $last = trim(sanitizeString($_POST[ 'last' ]));
     
     if (!empty($first) && !empty($last)) {
-    
-        $studentId = getStudentIdByName($first, $middle, $last);
-        if ($studentId == NULL) {
-            $result = queryPostgres("INSERT INTO students (first, middle, last) VALUES ($1, $2, $3)", 
-                array($first, $middle, $last)); 
-        
-            $message = "Added student " . $first . " " . $middle . " " . $last;
-        } else {
-            $message = "<span class='error'>Student " . $first . " " . $middle . " " . $last . " already exists.</span>";
+        try {
+            validateNames(array($first, $middle, $last));
+ 
+            $studentId = getStudentIdByName($first, $middle, $last);
+            if ($studentId == NULL) {
+                $result = queryPostgres("INSERT INTO students (first, middle, last) VALUES ($1, $2, $3)", 
+                    array($first, $middle, $last)); 
+
+                $message = "Added student " . $first . " " . $middle . " " . $last;
+            } else {
+                $message = "<span class='error'>Student " . $first . " " . $middle . " " . $last . " already exists.</span>";
+            }
+        } catch (Exception $ex) {
+            $msg = $ex->getMessage();
+            $error = "<span class='error'>$msg</span>";
         }
     } else {
         $error = "<span class='error'>Provide at least a first and last name</span>";
@@ -48,3 +54,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 _END;
   
+function validateNames($names) {
+    
+    foreach($names as $name) {
+        $name = trim($name);
+        if ( preg_match('/\s/', $name) ) {
+            $proposedName = preg_replace('/\s/', '-', $name);
+            throw new Exception("Names may not contain spaces. Consider using $proposedName");
+        }
+    }
+}
