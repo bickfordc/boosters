@@ -1,5 +1,7 @@
 <?php
 
+  define("STUDENT_PERCENTAGE", 0.80);
+
   date_default_timezone_set("America/Denver");
 
   $dbUrl = getenv('DATABASE_URL');

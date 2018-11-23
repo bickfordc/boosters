@@ -76,6 +76,21 @@ class KsReload {
         return $args;
     }
     
+    public function insertToDb() {
+        $result = pg_query_params("INSERT INTO ks_card_reloads (card, reload_date, "
+                . "reload_amount, original_invoice_number, original_invoice_date) VALUES ($1, $2, $3, $4, $5)", 
+                array(
+                $this->card,
+                $this->transactionDate,
+                $this->amount,
+                $this->originalInvoiceNumber,
+                $this->originalInvoiceDate
+                ));
+        if (!result) {
+            throw new Exception(pg_last_error());
+        }
+    }
+    
     /**
      * Get the ID of the student that the card is assigned to.
      * @return int student ID, or NULL if card is not assigned

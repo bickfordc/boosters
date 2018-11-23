@@ -71,17 +71,37 @@
                 
                 $transactions[] = $ksReload;
             }
+            // Iterate over the transactions and determine how student balances are impacted
+            $affectedStudents = array();
             foreach ($transactions as $trans) {
-                if (($studentId = $trans->getStudentId()) != NULL) {
-                    
+                
+                if (($id = $trans->getStudentId()) != NULL) {
+                    // The card is assigned to a student. 
+                    // Add the transaction amount to the students running total
+                    $student = $affectedStudents[$id];
+                    if ($student == NULL) {
+                        $student = new Student($id);
+                        $affectedStudents[$id] = $student;
+                    }
+                    $student->adjustBalance($trans->getAmount() * STUDENT_PERCENTAGE);
                 }
-//                $result = pg_query_params($trans->getSqlInsertStr(), $trans->getSqlInsertArgs());
-//                if (!$result) 
-//                {
-//                    throw new Exception(pg_last_error()); 
-//                }
             }
-            $successMsg = count($transactions) . " transactions imported.";
+            // Make all the database updates
+            try {
+                pg_query("BEGIN");
+                foreach ($transactions as $trans) {
+                    $trans->insertToDb();
+                }
+                foreach ($affectedStudents as $student) {
+                    $student->updateBalanceInDb();
+                }
+                pg_query("COMMIT");
+                $successMsg = count($transactions) . " transactions imported.";
+            }
+            catch(Exception $e) {
+                pg_query("ROLLBACK");
+                throw $e;
+            }
         }
         catch(Exception $e) {
             $pageMessage = "";
