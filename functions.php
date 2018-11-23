@@ -1,6 +1,8 @@
 <?php
 
-  define("STUDENT_PERCENTAGE", 0.80);
+  define("REBATE_PERCENTAGE", 0.05);
+  define("STUDENT_PERCENTAGE", REBATE_PERCENTAGE * 0.80);
+  define("BOOSTERS_PERCENTAGE", REBATE_PERCENTAGE * 0.20);
 
   date_default_timezone_set("America/Denver");
 

@@ -4,9 +4,7 @@
     
     require_once 'header.php';
     require_once 'orm/KsReload.php';
-    //require_once 'RebateReport.php';
-    //require_once 'RebatePercentages.php';
-    //require_once 'ScripFamily.php';
+    require_once 'orm/Student.php';
      
     if (!$loggedin) die();
 
