@@ -11,10 +11,26 @@ $(function () {
         mtype: "GET",
         colNames: ["Transaction date", "Card", "Original invoice", "Original invoice date", "Reload amount"],
         colModel: [
-            { name: "reload_date", width: 55 },
-            { name: "card", width: 200, editable: true },
-            { name: "original_invoice_number", width: 100, editable: true },
-            { name: "original_invoice_date", width: 55, editable: true },
+            { name: "reload_date", width: 55, editable: false,
+//              formatter: 'date',
+//                formatoptions: { 
+//                    srcformat: 'ISO8601Long', 
+//                    newformat: 'm/d/Y', 
+//                    defaultValue:null 
+//                }, 
+//              edittype: 'text', 
+//              editoptions: { 
+//                size: 12, 
+//                maxlengh: 12, 
+//                dataInit: function (element) { 
+//                  $(element).datepicker({ dateFormat: 'mm/dd/yy' })
+//                }
+//              }, 
+//              editrules: { date: true } 
+            },
+            { name: "card", width: 100, editable: false },
+            { name: "original_invoice_number", width: 75, editable: false },
+            { name: "original_invoice_date", width: 75, editable: false },
             { name: "reload_amount", width: 75, editable: false, align: "right" }
             //{ name: "total", width: 80, align: "right" },
             //{ name: "note", width: 150, sortable: false }
@@ -23,7 +39,7 @@ $(function () {
         pager: "#pager",
         rowNum: 15,
         // rowList: [10, 20, 30],
-        sortname: "last",
+        sortname: "reload_date",
         sortorder: "asc",
         viewrecords: true,
         gridview: true,
@@ -31,7 +47,7 @@ $(function () {
         caption: "King Soopers card reloads",
         height: "auto",
         autowidth: true,
-        subGrid: true,
+        //subGrid: true,
         //subGridUrl: "getStudentCards.php",
 //        subGridModel: [
 //            {

@@ -2,10 +2,15 @@
 
 //include the information needed for the connection to database server. 
 // 
-//require_once 'functions.php';
- require_once __DIR__ . "/../functions.php";
+require_once 'functions.php';
+ 
 // Four parameters are added to the url as described in colModel.
 // Get these parameters to construct the needed query.
+// Since we specify in the options of the grid that we will use a GET method 
+// we should use the appropriate command to obtain the parameters. 
+// In our case this is $_GET. If we specify that we want to use post 
+// we should use $_POST. Maybe the better way is to use $_REQUEST, which
+// contain both the GET and POST variables. For more information refer to php documentation.
 
 // Get the requested page. By default grid sets this to 1. 
 $page = $_GET['page'];
@@ -20,9 +25,8 @@ $sidx = $_GET['sidx'];
 // sorting order - At first this will be sortorder parameter
 $sord = $_GET['sord'];
  
-// if we didn't get an column index to sort on,
-// sort on id (card number);
-if(!$sidx) $sidx = "id"; 
+// if we didn't get a column index to sort on, sort on reload_date
+if(!$sidx) $sidx = "reload_date"; 
 
 $s = "";
 $error = "";
@@ -32,40 +36,33 @@ if (!validate($page, $limit, $sidx, $sord, $error))
 }
 else
 {
-    $where = getWhereClause();
-    
-    // Get the count of rows returned by the query so we can calculate total pages.
-    $sql = "SELECT c.id, c.sold, c.card_holder, c.notes, c.active, c.donor_code, s.first, s.last FROM cards c "
-        . "LEFT JOIN student_cards sc ON sc.card=c.id "
-        . "LEFT JOIN students s ON sc.student=s.id ";
-    
-    $countResult = queryPostgres($sql . $where, array());
-    $count = pg_num_rows($countResult);
-    
     // calculate the starting position of the rows 
     $start = $limit*$page - $limit;
-   
+
     // if start position is negative, set it to 0 
     if($start <0) $start = 0; 
+
+    $where = getWhereClause();
     
-    // Perform the same query but with offset and limit so we have just one page of rows.
-    $sql = $sql . $where . " ORDER BY $sidx $sord OFFSET $start LIMIT $limit";
-    $result = queryPostgres($sql , array());
+    $sql = "SELECT card, reload_date, reload_amount, original_invoice_number, original_invoice_date FROM ks_card_reloads $where ORDER BY $sidx $sord OFFSET $start LIMIT $limit";
+    $result = queryPostgres($sql, array());
     
-    // calculate the total pages for the query 
+    $countResult = queryPostgres("SELECT card, reload_date, reload_amount, original_invoice_number, original_invoice_date FROM ks_card_reloads $where", array());
+    $count = pg_num_rows($countResult);
+    
     if( $count > 0 && $limit > 0) { 
         $total_pages = ceil($count/$limit); 
     } else { 
         $total_pages = 0; 
     } 
-
+    
     // if the requested page is greater than the total, 
     // set the requested page to total pages 
     if ($page > $total_pages) $page=$total_pages;
 
     // Set the appropriate header information. 
     header("Content-type: text/xml;charset=utf-8");
-
+    
     $s =  "<?xml version='1.0' encoding='utf-8'?>";
     $s .= "<rows>";
     $s .= "<page>".$page."</page>";
@@ -74,17 +71,12 @@ else
 
     // be sure to put text data in CDATA
     while($row = pg_fetch_array($result)) {
-        $s .= "<row id='". $row['id']."'>";            
-        $s .= "<cell>". $row['id']."</cell>";
-        $sold = $row['sold'] == 't' ? "true" : "false";
-        $s .= "<cell>".$sold."</cell>";
-        $s .= "<cell><![CDATA[". $row['card_holder']."]]></cell>";
-        $s .= "<cell><![CDATA[". $row['notes']."]]></cell>";
-        $active = $row['active'] == 't' ? "true" : "false";
-        $s .= "<cell>".$active."</cell>";
-        $s .= "<cell>". $row['donor_code']."</cell>";
-        $s .= "<cell>". $row['first']."</cell>";  // CEB
-        $s .= "<cell>". $row['last']."</cell>";  // CEB
+        $s .= "<row id='". $row['reload_date']."'>";            
+        $s .= "<cell>". $row['reload_date']."</cell>";
+        $s .= "<cell>". $row['card']."</cell>";
+        $s .= "<cell>". $row['original_invoice_number']."</cell>";
+        $s .= "<cell>". $row['original_invoice_date']."</cell>";
+        $s .= "<cell>". $row['reload_amount']."</cell>";
         $s .= "</row>";
     }
     $s .= "</rows>"; 
@@ -125,10 +117,6 @@ function getWhereClause() {
     $where = "";
     if ($_GET['_search'] === "true") {
         $searchCol = $_GET['searchField'];
-        // id is ambiguous since we have card id and student id
-        if ($searchCol == "id") {
-            $searchCol = "c.id";
-        }
         $searchQuery = $_GET['searchString'];
         $searchOp = $_GET['searchOper'];
         $where = "WHERE ";
