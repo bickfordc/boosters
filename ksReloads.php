@@ -123,69 +123,7 @@
       </form>
     </div>
 _END;
-    
-//        else
-//        {
-//            
-//                $ksCardTotals = processKingSoopers($tmpNames[0]);
-//                $ksCardsNotFound = array();
-//                $ksSoldCardTotal = 0;
-//                $ksUnsoldCardTotal = 0;
-//                $ksCardData = getCardData($ksCardTotals, $ksCardsNotFound, $ksSoldCardTotal, $ksUnsoldCardTotal);
-//            
-//            $rebatePercentages = new RebatePercentages(
-//                    $ksSoldCardTotal + $ksUnsoldCardTotal,
-//                    $swSoldCardTotal + $swUnsoldCardTotal);
-//            
-//            $cardsNotFound = array_merge($ksCardsNotFound, $swCardsNotFound);
-//            if (count($cardsNotFound) > 0)
-//            {
-//                $pageMsg = "The following grocery cards were not found:<br>";
-//                foreach ($cardsNotFound as $val)
-//                {
-//                    $pageMsg .= $val . "<br>";
-//                }
-//                $fatalError = true;
-//            }
-//            
-//            //print_r($ksCardData);
-//            $sudents = array();
-//            $students = groupCardsByStudent($students, $ksCardData, "ks");
-//            $students = groupCardsByStudent($students, $swCardData, "sw");
-//            $students = addScripFamiliesToStudents($students, $scripFamilies);
-//            
-//            $report = new RebateReport($students, $rebatePercentages, $ksCardData, $swCardData, 
-//                    $names, $scripFamilies);
-//            $reportComplete = true;
-//
-//            if ($reportComplete === true)
-//            {
-//                //file_put_contents("pdfsrc.html", $report->getTable(true));  // CEB isForPdf
-//                file_put_contents("pdfsrc.html", $report->getTable());
-//                
-//                echo "<div class='tile_div'>" .
-//                     "<button class='styleButton' id='pdf'>Download as .PDF file</button>" .
-//                     "<button class='last styleButton' id='done'>Done</button>" .
-//                     "<div class='clear'></div></div>" .
-//                     "<script>" .
-//                     "$('#pdf').click(function(event){ " .
-//                       "$('body').css('cursor', 'progress');" .
-//                       "window.location.href = 'download.php';" .
-//                       "$('body').css('cursor', 'default');" .
-//                     "});" .
-//                     "$('#done').click(function(event){ " .
-//                       "window.location.href = 'index.php'" .
-//                     "});" .
-//                     "</script>";
-//                echo $report->getTable();   
-//            }
-//        }
-//    }
-//    else
-//    {
-//        $pageMsg = "Select the King Soopers .csv file";
-//    }
-    
+        
     function validateKingSoopers($tmpName)
     {
         $isValid = false;

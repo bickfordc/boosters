@@ -3,8 +3,10 @@
 
   echo "<!DOCTYPE html>\n<html><head>";
 
-  require_once 'functions.php';
-
+  //require_once 'functions.php';
+  //require_once($_SERVER["DOCUMENT_ROOT"] . "/functions.php");
+  require_once(__DIR__ . "/functions.php");
+  
   if (isset($_SESSION['user']))
   {
     $user     = $_SESSION['user'];
@@ -26,7 +28,7 @@
      echo "<nav>" .
      "<ul class='nav'>" .
        "<li><a href='index.php'>CARDS</a>" .
-         "<ul><li><a href='newCards.php'>Add new cards</a></li>" .
+         "<ul><li><a href='/boosters/newCards.php'>Add new cards</a></li>" .
          "<li><a href='sellCards.php'>Assign a card to a student</a></li>" .
          "<li><a href='unassignCards.php'>Unassign a card</a></li>" .
          "<li><a href='cardData.php'>Show cards</a></li>" .
@@ -37,7 +39,7 @@
          "</ul></li>" .
        "<li><a href='index.php'>TRANSACTIONS</a>" .
          "<ul><li><a href='ksReloads.php'>Import KS card reloads</a></li>" .
-         "<li><a href='ksReloadData.php'>Show KS card reloads</a></li>" .
+         "<li><a href='grids/ksReloadData.php'>Show KS card reloads</a></li>" .
          "<li><a href='withdrawal.php'>Make a student withdrawal</a></li>" .
          "<li><a href='withdrawalData.php'>Show student withdrawals</a></li>" .
          "</ul></li>" .
