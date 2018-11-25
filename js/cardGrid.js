@@ -3,20 +3,21 @@ $(function () {
         url: "getCardData.php",
         datatype: "xml",
         mtype: "GET",
-        colNames: ["Card Number", "Assigned", "Card Holder", "Notes", "Active", "Student First", "Student Last"],
+        colNames: ["Card Number", "Assigned", "Card Holder", "Notes", "Active", "Student First", "Student Middle", "Student Last"],
         colModel: [
             { name: "id", width: 100, editable:true },
             { name: "sold", width: 50, editable: true, search: false, formatter: "checkbox",
                 edittype: "checkbox", align: "center",
                 editoptions: { value: "true:false"} 
             },
-            { name: "card_holder", width: 100, editable: true },
+            { name: "card_holder", width: 60, editable: true },
             { name: "notes", width: 40, editable: true },
             { name: "active", width: 50, editable: true, search : false, formatter: "checkbox", 
               edittype: "checkbox", align: "center",
               editoptions: { value: "true:false"} 
             },
             { name: "first", width: 60 },
+            { name: "middle", width: 60 },
             { name: "last", width: 60 }
         ],
         //editurl: "editCardData.php",
