@@ -43,11 +43,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
      <p class='pageMessage'>$message</p>
      <div class='form'>
       <form method='post' action='addStudent.php' autocomplete='off'>$error
-       <input type='text' placeholder='first name' name='first' value='$first'/>
+       <input type='text' placeholder='first name' name='first'/>
        <div data-tip="Use a middle name or initial if necessary to distinguish among common names.">
-         <input type='text' placeholder='middle name (optional)' name='middle' value='$middle'/>
+         <input type='text' placeholder='middle name (optional)' name='middle'/>
        </div>
-       <input type='text' placeholder='last name' name='last' value='$last'/>
+       <input type='text' placeholder='last name' name='last'/>
        <button>submit</button>
       </form>
      </div>
