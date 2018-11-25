@@ -11,7 +11,7 @@ $(function () {
             { name: "middle", width: 100, editable: true },
             { name: "last", width: 200, editable: true },
             { name: "balance", width: 75, editable: false, align: "right" },
-            { name: "active", width: 50, editable: true, align: "right", 
+            { name: "active", width: 50, editable: true, search: false, align: "right", 
               formatter: "checkbox", edittype: "checkbox",
               editoptions: { value: "true:false"} 
             }

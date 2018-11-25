@@ -6,13 +6,13 @@ $(function () {
         colNames: ["Card Number", "Assigned", "Card Holder", "Notes", "Active", "Student First", "Student Last"],
         colModel: [
             { name: "id", width: 100, editable:true },
-            { name: "sold", width: 50, editable: true, formatter: "checkbox",
+            { name: "sold", width: 50, editable: true, search: false, formatter: "checkbox",
                 edittype: "checkbox", align: "center",
                 editoptions: { value: "true:false"} 
             },
             { name: "card_holder", width: 100, editable: true },
             { name: "notes", width: 40, editable: true },
-            { name: "active", width: 50, editable: true, formatter: "checkbox", 
+            { name: "active", width: 50, editable: true, search : false, formatter: "checkbox", 
               edittype: "checkbox", align: "center",
               editoptions: { value: "true:false"} 
             },
