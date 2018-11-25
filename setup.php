@@ -58,7 +58,8 @@ EOF;
        email varchar(80),
        balance numeric(10, 2) DEFAULT 0.00,
        graduation_year smallint,
-       active boolean DEFAULT TRUE
+       active boolean DEFAULT TRUE,
+       notes varchar(80)
       );
 EOF;
     
@@ -124,20 +125,7 @@ EOF;
 EOF;
     
     postgres_query($sql);
-    
-//    $sql =<<<EOF
-//    CREATE TABLE IF NOT EXISTS sw_card_reloads
-//      (card varchar(30),
-//       reload_date timestamp,
-//       reload_amount money,
-//       store_number varchar(4),
-//       store_location varchar(40),
-//       PRIMARY KEY (card, reload_date, reload_amount)
-//      );
-//EOF;
-//    
-//    postgres_query($sql);
-    
+        
     $sql =<<<EOF
     CREATE TABLE IF NOT EXISTS scrip_orders
       (scrip_first varchar(32),
@@ -156,7 +144,31 @@ EOF;
 EOF;
     
     postgres_query($sql);
+    
+    $sql =<<<EOF
             
+    DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'withdrawal_purpose') THEN
+            CREATE TYPE withdrawal_purpose AS ENUM
+            (
+                'travel', 'uniforms', 'instruments', 'lessons', 'consumables', 'other'
+            );
+        END IF;
+    END$$;
+            
+    CREATE TABLE IF NOT EXISTS student_withdrawals
+      (id SERIAL PRIMARY KEY,
+       student integer REFERENCES students (id),
+       amount numeric (10,2),
+       purpose withdrawal_purpose,
+       notes varchar(80),
+       date date
+      );
+EOF;
+    
+    postgres_query($sql);
+    
   function postgres_query($sql) {
     $ret = pg_query($sql);
     if(!$ret){

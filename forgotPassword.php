@@ -113,7 +113,7 @@
       <div class="form">
        <form id='emailForm' class='login-form' method='post' action='forgotPassword.php'>
         <div id='info'>$error</div>
-        <input id='email' type="text" placeholder="email" name='email' value='$email'/>
+        <input id='email' type="email" placeholder="email" name='email' value='$email'/>
         <button type='submit' id='send'>Send</button>
        </form>
       </div>

@@ -22,7 +22,7 @@ $sord = $_GET['sord'];
  
 // if we didn't get an column index to sort on,
 // sort on id (card number);
-if(!$sidx) $sidx = "id"; 
+if(!$sidx) $sidx = "date"; 
 
 $s = "";
 $error = "";
@@ -35,9 +35,8 @@ else
     $where = getWhereClause();
     
     // Get the count of rows returned by the query so we can calculate total pages.
-    $sql = "SELECT c.id, c.sold, c.card_holder, c.notes, c.active, s.first, s.last FROM cards c "
-        . "LEFT JOIN student_cards sc ON sc.card=c.id "
-        . "LEFT JOIN students s ON sc.student=s.id ";
+    $sql = "SELECT s.first, s.last, w.id, w.amount, w.purpose, w.notes, w.date FROM student_withdrawals w "
+         . "INNER JOIN students s ON w.student=s.id";
     
     $countResult = queryPostgres($sql . $where, array());
     $count = pg_num_rows($countResult);
@@ -74,16 +73,14 @@ else
 
     // be sure to put text data in CDATA
     while($row = pg_fetch_array($result)) {
-        $s .= "<row id='". $row['id']."'>";            
+        $s .= "<row id='". $row['id']."'>";
         $s .= "<cell>". $row['id']."</cell>";
-        $sold = $row['sold'] == 't' ? "true" : "false";
-        $s .= "<cell>".$sold."</cell>";
-        $s .= "<cell><![CDATA[". $row['card_holder']."]]></cell>";
-        $s .= "<cell><![CDATA[". $row['notes']."]]></cell>";
-        $active = $row['active'] == 't' ? "true" : "false";
-        $s .= "<cell>".$active."</cell>";
+        $s .= "<cell>". $row['date']."</cell>";
         $s .= "<cell>". $row['first']."</cell>";
         $s .= "<cell>". $row['last']."</cell>";
+        $s .= "<cell>". $row['purpose']."</cell>";
+        $s .= "<cell><![CDATA[". $row['notes']."]]></cell>";
+        $s .= "<cell>". $row['amount']."</cell>";
         $s .= "</row>";
     }
     $s .= "</rows>"; 

@@ -305,6 +305,66 @@ div.container {
     font-family: Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace;
     font-size: small;
 }
+
+/* The Select element  (e.g. withdrawal reason ) */
+
+.custom-select {
+  position: relative;
+  font-size: 14px; 
+  text-align: left;
+  /*font-family: Arial;*/
+}
+.custom-select select {
+  display: none; /*hide original select element:*/
+}
+.select-selected {
+  background-color: #f2f2f2;
+  font-size: 14px;
+}
+
+/*style the arrow inside the select element:*/
+.select-selected:after {
+  position: absolute;
+  content: "";
+  top: 14px;
+  right: 10px;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-color: #000 transparent transparent transparent;
+}
+/*point the arrow upwards when the select box is open (active):*/
+.select-selected.select-arrow-active:after {
+  border-color: transparent transparent #000 transparent;
+  top: 7px;
+}
+/*style the items (options), including the selected item:*/
+.select-items div,.select-selected {
+  color: #000000;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
+  cursor: pointer;
+  font-size: 14px;
+}
+/*style items (options):*/
+.select-items {
+  position: absolute;
+  background-color: #f2f2f2;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  font-size: 14px; 
+  
+}
+/*hide the items when the select box is closed:*/
+.select-hide {
+  display: none;
+}
+.select-items div:hover, .same-as-selected {
+  background-color: rgba(0, 0, 0, 0.1);
+}
 /* ToolTips */
 
 [data-tip] {

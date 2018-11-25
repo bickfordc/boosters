@@ -3,7 +3,7 @@ $(function () {
         url: "getCardData.php",
         datatype: "xml",
         mtype: "GET",
-        colNames: ["Card Number", "Sold", "Card Holder", "Notes", "Active", "Card Type", "Student First", "Student Last"],
+        colNames: ["Card Number", "Assigned", "Card Holder", "Notes", "Active", "Student First", "Student Last"],
         colModel: [
             { name: "id", width: 100, editable:true },
             { name: "sold", width: 50, editable: true, formatter: "checkbox",
@@ -16,11 +16,10 @@ $(function () {
               edittype: "checkbox", align: "center",
               editoptions: { value: "true:false"} 
             },
-            { name: "donor_code", width: 60 },
             { name: "first", width: 60 },
             { name: "last", width: 60 }
         ],
-        editurl: "editCardData.php",
+        //editurl: "editCardData.php",
         pager: "#pager",
         rowNum: 15,
         // rowList: [10, 20, 30],
@@ -29,7 +28,7 @@ $(function () {
         viewrecords: true,
         gridview: true,
         autoencode: true,
-        caption: "Store Cards",
+        caption: "King Soopers Cards",
         height: "auto",
         autowidth: true,
         loadError: function(jqXHR, textStatus, errorThrown) {
