@@ -108,6 +108,32 @@
         return $formattedCardNumber;  
     }
     
+function parseStudentName($fullName, &$first, &$middle, &$last) {
+    
+    $first = "";
+    $middle = "";
+    $last = "";
+        
+    $parts = preg_split('/\s+/', $fullName);
+    $len = count($parts);
+    
+    if ($len < 2) {
+        throw new Exception("Must have at least a first and last name");
+    } 
+    elseif ($len == 2) {
+        $first =$parts[0];
+        $last = $parts[1];
+    } 
+    elseif ($len == 3) {
+        $first =$parts[0];
+        $middle = $parts[1];
+        $last = $parts[2];    
+    } 
+    else {
+        throw new Exception("Invalid name $fullName");
+    }
+}
+    
  function getStudentIdByName($first, $middle, $last) {
     
     $result = queryPostgres("SELECT id FROM students WHERE first=$1 AND middle=$2 AND last=$3", array($first, $middle, $last));

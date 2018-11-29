@@ -95,20 +95,25 @@ $sql =<<<EOF
     CREATE TABLE IF NOT EXISTS scrip_families
       (first varchar(32),
        last varchar(32),
+       active_family boolean DEFAULT TRUE,
+       notes varchar(80),
+       student integer REFERENCES students (id),
        PRIMARY KEY (first, last)
       );           
 EOF;
     
     postgres_query($sql);
-    
+        
     $sql =<<<EOF
-    CREATE TABLE IF NOT EXISTS student_scrip_families
-      (student integer REFERENCES students (id),
-       scrip_first varchar(32),
-       scrip_last  varchar(32),
-       PRIMARY KEY (student, scrip_first, scrip_last),
-       FOREIGN KEY (scrip_first, scrip_last) REFERENCES scrip_families(first, last)
-      );          
+    CREATE TABLE IF NOT EXISTS scrip_orders
+    (order_id varchar(10) PRIMARY KEY,
+     order_count smallint,
+     order_date date,
+     rebate numeric(10,2),
+     scrip_first varchar(32),
+     scrip_last varchar(32),
+     FOREIGN KEY (scrip_first, scrip_last) REFERENCES scrip_families(first, last)
+    );
 EOF;
     
     postgres_query($sql);
@@ -125,26 +130,7 @@ EOF;
 EOF;
     
     postgres_query($sql);
-        
-    $sql =<<<EOF
-    CREATE TABLE IF NOT EXISTS scrip_orders
-      (scrip_first varchar(32),
-       scrip_last varchar(32),
-       scrip_student_name varchar(40),
-       active boolean DEFAULT TRUE,
-       order_count integer,
-       order_id varchar(15),
-       order_date timestamp,
-       net_value money,
-       net_cost money,
-       payment_type varchar(15),
-       order_status varchar(15),
-       org_fam_active boolean DEFAULT TRUE
-      );
-EOF;
-    
-    postgres_query($sql);
-    
+           
     $sql =<<<EOF
             
     DO $$

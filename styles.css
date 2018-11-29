@@ -98,7 +98,7 @@ nav{
 .nav li {
         display: inline-block;
         margin: auto;
-	width: 400px;
+	width: 300px;
 	position: relative;
         background: linear-gradient(gold, maroon, maroon);
 }

@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
          <input type='text' placeholder='middle name (optional)' name='middle'/>
        </div>
        <input type='text' placeholder='last name' name='last'/>
-       <button>submit</button>
+       <button>Add student</button>
       </form>
      </div>
     </div>
