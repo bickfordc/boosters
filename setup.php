@@ -93,12 +93,12 @@ EOF;
    
 $sql =<<<EOF
     CREATE TABLE IF NOT EXISTS scrip_families
-      (first varchar(32),
-       last varchar(32),
-       active_family boolean DEFAULT TRUE,
-       notes varchar(80),
+      (family_first varchar(32),
+       family_last varchar(32),
+       family_active boolean DEFAULT TRUE,
+       family_notes varchar(80),
        student integer REFERENCES students (id),
-       PRIMARY KEY (first, last)
+       PRIMARY KEY (familY_first, family_last)
       );           
 EOF;
     
@@ -112,7 +112,7 @@ EOF;
      rebate numeric(10,2),
      scrip_first varchar(32),
      scrip_last varchar(32),
-     FOREIGN KEY (scrip_first, scrip_last) REFERENCES scrip_families(first, last)
+     FOREIGN KEY (scrip_first, scrip_last) REFERENCES scrip_families(family_first, family_last)
     );
 EOF;
     

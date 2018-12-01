@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 function addFamily($studentId, $familyFirst, $familyLast) {
 
     $result = pg_query_params(
-        "INSERT INTO scrip_families (student, first, last) VALUES ($1, $2, $3)", 
+        "INSERT INTO scrip_families (student, family_first, family_last) VALUES ($1, $2, $3)", 
         array($studentId, $familyFirst, $familyLast));
     if (!$result) {
         throw new Exception(pg_last_error());
