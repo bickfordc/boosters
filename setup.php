@@ -112,6 +112,7 @@ EOF;
      rebate numeric(10,2),
      scrip_first varchar(32),
      scrip_last varchar(32),
+     student integer REFERENCES students (id),
      FOREIGN KEY (scrip_first, scrip_last) REFERENCES scrip_families(family_first, family_last)
     );
 EOF;
@@ -125,6 +126,7 @@ EOF;
        reload_amount numeric(10, 2),
        original_invoice_number varchar(15),
        original_invoice_date date,
+       student integer REFERENCES students (id),
        PRIMARY KEY (card, reload_date, reload_amount)
       );      
 EOF;

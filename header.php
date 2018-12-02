@@ -39,6 +39,7 @@
          "</ul></li>" .
        "<li><a href='index.php'>SCRIP</a>" .
          "<ul><li><a href='addScripFamily.php'>Add a Scrip family</a></li>" .
+         "<li><a href='importScripFamilies.php'>Import Scrip families</a></li>" .
          "<li><a href='showScripFamilies.php'>Show Scrip families</a></li>" .
          "</ul></li>" .
        "<li><a href='index.php'>TRANSACTIONS</a>" .

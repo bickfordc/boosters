@@ -60,22 +60,7 @@ class KsReload {
     public function setAmount($Amount) {
         $this->Amount = $Amount;
     }
-    
-//    public function getSqlInsertStr() {
-//        return "INSERT INTO ks_card_reloads (card, reload_date, reload_amount, original_invoice_number, original_invoice_date) VALUES ($1, $2, $3, $4, $5)";
-//    }
-//    
-//    public function getSqlInsertArgs() {
-//        $args = array();
-//        $args[] = $this->card;
-//        $args[] = $this->transactionDate;
-//        $args[] = $this->amount;
-//        $args[] = $this->originalInvoiceNumber;
-//        $args[] = $this->originalInvoiceDate;
-//        
-//        return $args;
-//    }
-    
+        
     public function insertToDb() {
         $result = pg_query_params("INSERT INTO ks_card_reloads (card, reload_date, "
                 . "reload_amount, original_invoice_number, original_invoice_date) VALUES ($1, $2, $3, $4, $5)", 

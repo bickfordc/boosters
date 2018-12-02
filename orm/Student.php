@@ -69,8 +69,13 @@ class Student {
         return $this->graduationYear;
     }
 
-    public function getActive() {
-        return $this->active;
+    public function isActive() {
+        if ($this->active == "t") {
+            return TRUE;
+        }
+        else {
+            return FALSE;;
+        }
     }
 
     public function setId($id) {
