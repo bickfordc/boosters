@@ -67,4 +67,33 @@ $( document ).ready(function() {
         $("#cardresults").show();
     });
 
+   $("#scripFamily").keyup(function() {
+            var keyword = $("#scripFamily").val();
+            if (keyword.length >= MIN_LENGTH) {
+                    $.get( "searchScripFamily.php", { key: keyword } )
+                    .done(function( data ) {
+                        $('#scripFamilyResults').html('');
+                        var results = jQuery.parseJSON(data);
+                        $(results).each(function(key, value) {
+                                $('#scripFamilyResults').append('<div class="carditem">' + value + '</div>');
+                        });
+
+                        $('.carditem').click(function() {
+                            var famtext = $(this).html();
+                            $('#scripFamily').val(famtext);
+                        });
+
+                    });
+            } else {
+                    $('#scripFamilyResults').html('');
+            }
+    });
+    
+    $("#scripFamily").blur(function(){
+            $("#scripFamilyResults").fadeOut(500);
+    })
+    .focus(function() {		
+        $("#scripFamilyResults").show();
+    });
+
 });

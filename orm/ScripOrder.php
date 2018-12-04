@@ -88,7 +88,7 @@ class ScripOrder {
      *  - inserts the Scrip order
      *  - If there is an associated active student, updates the student balance
      *
-     * @param type boolean $transaction If true, makes the db updates as a transaction
+     * @param type boolean $transaction If true, performs the db updates as a transaction
      *        pass FALSE if you will be calling persist on  a number of orders and 
      *        will provide your own outer transaction
      * @throws Exception
@@ -154,14 +154,15 @@ class ScripOrder {
     private function insertOrderToDb() {
         
         $result = pg_query_params("INSERT INTO scrip_orders (order_id, order_count, "
-            . "order_date, rebate, scrip_first, scrip_last) VALUES ($1, $2, $3, $4, $5, $6)", 
+            . "order_date, rebate, scrip_first, scrip_last, student) VALUES ($1, $2, $3, $4, $5, $6, $7)", 
             array(
             $this->orderId,
             $this->orderCount,
             $this->orderDate,
             $this->rebate,
             $this->familyFirst,
-            $this->familyLast
+            $this->familyLast,
+            $this->student->id
             ));
         if (!$result) {
             throw new Exception(pg_last_error());
