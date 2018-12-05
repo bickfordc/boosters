@@ -32,7 +32,10 @@ class ScripOrder {
         $this->orderDate = $this->parseDate($row[6]);
         $this->rebate = floatval($row[7]) - floatval($row[8]);
         
-        $this->student = $this->getStudent();
+        $studentId = $this->getStudentId();
+        if ($studentId){
+            $this->student = new Student($studentId);
+        }
     }
     
     public function getFamilyFirst() {
@@ -59,6 +62,10 @@ class ScripOrder {
         return $this->rebate;
     }
 
+    public function getStudent() {
+        return $this->student;
+    }
+    
     public function setFamilyFirst($familyFirst) {
         $this->familyFirst = $familyFirst;
     }
@@ -123,8 +130,8 @@ class ScripOrder {
      * @return int student ID, or NULL if card is not assigned
      * 
      */
-    private function getStudentId() {
-        $result = queryPostgres("SELECT student FROM scrip_families WHERE family_first=$1 AND family_last=$2", 
+    public function getStudentId() {
+        $result = pg_query_params("SELECT student FROM scrip_families WHERE family_first=$1 AND family_last=$2", 
                 array($this->familyFirst, $this->familyLast));
         if (($row = pg_fetch_array($result)) === false)
         {
@@ -135,37 +142,45 @@ class ScripOrder {
             return $row["student"];
         }
     }
-    
-    private function getStudent() {
-        $studentId = $this->getStudentId();
-        if ($studentId) {
-            $this->student = new Student($studentId);
+            
+    public function insertOrderToDb() {
+        
+        if ($this->student && $this->student->isActive())
+        {
+            $result = pg_query_params("INSERT INTO scrip_orders VALUES ($1, $2, $3, $4, $5, $6, $7)", 
+            array(
+                $this->orderId,
+                $this->orderCount,
+                $this->orderDate,
+                $this->rebate,
+                $this->familyFirst,
+                $this->familyLast,
+                $this->student->getId()
+                ));
+            if (!$result) {
+                throw new Exception(pg_last_error());
+            }
         }
-        else {
-            $this->student = NULL;
+        else
+        {
+            $result = pg_query_params("INSERT INTO scrip_orders (order_id, order_count, "
+                . "order_date, rebate, scrip_first, scrip_last) VALUES ($1, $2, $3, $4, $5, $6)", 
+                array(
+                $this->orderId,
+                $this->orderCount,
+                $this->orderDate,
+                $this->rebate,
+                $this->familyFirst,
+                $this->familyLast
+                ));
+            if (!$result) {
+                throw new Exception(pg_last_error());
+            }
         }
     }
     
     private function parseDate($dateStr) {
         $elements = explode(" ", $dateStr);
         return $elements[0];
-    }
-    
-    private function insertOrderToDb() {
-        
-        $result = pg_query_params("INSERT INTO scrip_orders (order_id, order_count, "
-            . "order_date, rebate, scrip_first, scrip_last, student) VALUES ($1, $2, $3, $4, $5, $6, $7)", 
-            array(
-            $this->orderId,
-            $this->orderCount,
-            $this->orderDate,
-            $this->rebate,
-            $this->familyFirst,
-            $this->familyLast,
-            $this->student->id
-            ));
-        if (!$result) {
-            throw new Exception(pg_last_error());
-        }
     }
 }

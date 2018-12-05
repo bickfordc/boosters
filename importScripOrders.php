@@ -35,10 +35,10 @@
                 throw new Exception("That file type was $type, not text/csv.");
             }
 
-//            if (!validateReport($name))
-//            {
-//                throw new Exception("That does not appear to be a ShopWithScrip report.");
-//            }
+            if (!validateReport($name))
+            {
+                throw new Exception("That does not appear to be a ShopWithScrip Family Earnings Summary report.");
+            }
 
             $file = fopen($name, "r");
             if ($file == NULL)
@@ -59,7 +59,9 @@
                 }
                 $orders[] = new ScripOrder($row);
             }
-            updateDatabase($orders);
+            fclose($file);
+            $affectedStudents = getAffectedStudents($orders);
+            updateDatabase($orders, $affectedStudents);
             $successMsg = count($orders) . " transactions imported.";
         }
         catch(Exception $e) {
@@ -93,38 +95,56 @@ _END;
         {
             $row = fgetcsv($file, 300, ",");
             $numFields = count($row);
-            $first_name = $row[0];
-            $last_name = $row[1];
-            $student_name = $row[2];
-            $order_id = $row[5];
+            $first_name = trim($row[0]);
+            $last_name = trim($row[1]);
+            $student_name = trim($row[2]);
+            $order_id = trim($row[5]);
             
-           
-            if ($numFields !== 13) {return FALSE;}
-            if (strcmp($first_name, "first_name") != 0) {
-                return FALSE;
-            }
-            if (strcmp($last_name, "last_name") !=0 ) {return FALSE;}
-            if ($student_name !== "student_name") {return FALSE;}
-            if ($order_id !== "order_id") {return FALSE;}
-//            {
-//                $isValid = true;
-//            }
-            
+            if (($numFields == 13) &&
+                ($first_name == "first_name") &&
+                ($last_name == "last_name") &&
+                ($student_name == "student_name") &&
+                ($order_id == "order_id"))
+            {
+                $isValid = true;
+            }           
             fclose($file);
         }
-        return TRUE;
-        //return $isValid;
+        return $isValid;
     }
             
-    function updateDatabase($orders) 
+    function getAffectedStudents($orders) {
+        $affectedStudents = array();
+        foreach ($orders as $order) {
+            if (($id = $order->getStudentId()) != NULL) {
+                if (Student::isStudentActive($id)) {
+                    // The scrip family is assigned to an active student. 
+                    // Add the rebate amount to the students running total
+                    $student = $affectedStudents[$id];
+                    if ($student == NULL) {
+                        $student = new Student($id);
+                        $affectedStudents[$id] = $student;
+                    }
+                    $student->adjustBalance($order->getRebate() * STUDENT_PERCENTAGE);
+                }
+            }
+        }
+        return $affectedStudents;
+    }
+    
+    function updateDatabase($orders, $students) 
     {
         try {
             pg_query("BEGIN");
             
             foreach ($orders as $order) {
-                // Pass FALSE to tell the persist method that we're providing our own transaction
-                $order->persist(FALSE);
+                $order->insertOrderToDb();
             }
+            
+            foreach ($students as $student) {
+                $student->updateBalanceInDb();
+            }
+            
             pg_query("COMMIT");    
         }
         catch(Exception $e) {

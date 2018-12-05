@@ -91,8 +91,8 @@ _END;
             
     function updateDatabase($row) 
     {
-        $firstName = $row[2];
-        $lastName = $row[1];
+        $firstName = trim($row[2]);
+        $lastName = trim($row[1]);
 
         $result = pg_query_params("SELECT family_last FROM scrip_families WHERE family_first=$1 AND family_last=$2",
                 array($firstName, $lastName));

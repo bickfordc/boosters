@@ -134,4 +134,19 @@ class Student {
            throw new Exception(pg_last_error());
         }
     }    
+    
+    public static function isStudentActive($studentId) {
+        $result = pg_query_params("SELECT active FROM students WHERE id=$1", 
+                array($studentId));
+        if (!$result) {
+           throw new Exception(pg_last_error());
+        }
+        $row = pg_fetch_row($result);
+        if ($row[0] == "t") {
+            return TRUE;
+        }
+        else {
+            return FALSE;
+        }
+    }
 }
