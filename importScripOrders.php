@@ -62,11 +62,11 @@
             fclose($file);
             $affectedStudents = getAffectedStudents($orders);
             updateDatabase($orders, $affectedStudents);
-            $successMsg = count($orders) . " transactions imported.";
+            $successMsg = count($orders) . " orders imported.";
         }
         catch(Exception $e) {
             $pageMessage = "";
-            $errorMsg = $e->getMessage() . "<br>" . "No transactions were imported.";
+            $errorMsg = $e->getMessage() . "<br>" . "No orders were imported.";
         }
     }
         
@@ -78,12 +78,32 @@
     }
         
     echo <<<_END
-    <p class='pageMessage'>$pageMsg</p>
-    <div class="form">
-      <form method='post' action='importScripOrders.php' enctype='multipart/form-data'>
-        <input type='file' name='filename' size='10'>
-        <button type='submit'>Import Scrip data</button>   
-      </form>
+    <div class="container">
+      <div style="float:left;margin:10px">
+        <img src='img/scripFamilyEarnings.png'>
+      </div>
+      <div style="float:left;width:467px;height:823px;margin:10px"> 
+        <p>From the <a href='https://shop.shopwithscrip.com/Org/Manage/Report'>Reports</a>
+           page at ShopWithScrip, click <b>Run Report</b> for <b>Rebate Summary by Family</b>.
+           <br><br>This will bring up a form as shown at left. For Report Begin and End Date it is
+           recommended that you choose the first and last day of the past month. For the 
+           Output Format, choose Comma Delimited (*.csv).<br><br>
+           Click Run Report to save the file to your computer, then select it with the form at right.
+           <br><br>If after choosing the .csv file and clicking Import Scrip Orders, you get an error 
+           stating <em>That does not appear to be a ShopWithScrip Family Earnings Summary report</em> then
+           try opening the file in Excel and then saving as CSV (Comma delimited) (*.csv)
+        </p>
+      </div>
+      <div style="float:left;width:467px;height:423px;margin:10px"> 
+        <div class="form">
+          <p style="text-align:center">Select the .csv file</p>
+          <p class='error'>$formError</p>
+          <form method='post' action='importScripOrders.php' enctype='multipart/form-data'>
+            <input type='file' name='filename' size='10'>
+            <button type='submit'>Import Scrip orders</button>   
+          </form>
+        </div>
+      </div>
     </div>
 _END;
         
@@ -125,7 +145,7 @@ _END;
                         $student = new Student($id);
                         $affectedStudents[$id] = $student;
                     }
-                    $student->adjustBalance($order->getRebate() * STUDENT_PERCENTAGE);
+                    $student->adjustBalance($order->getRebate() * RebatePercentages::$STUDENT_SHARE);
                 }
             }
         }
