@@ -31,7 +31,7 @@ $(function () {
             { name: "card", width: 100, editable: false },
             { name: "original_invoice_number", width: 75, editable: false },
             { name: "original_invoice_date", width: 75, editable: false },
-            { name: "reload_amount", width: 75, editable: false, align: "right" }
+            { name: "reload_amount", width: 75, editable: false, align: "right", searchoptions:{sopt: ['eq','lt','le','gt','ge']} }
             //{ name: "total", width: 80, align: "right" },
             //{ name: "note", width: 150, sortable: false }
         ],

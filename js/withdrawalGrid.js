@@ -11,7 +11,7 @@ $(function () {
             { name: "last", width: 80, editable: false },
             { name: "purpose", width: 50, editable: false },
             { name: "notes", width: 200, editable: false },
-            { name: "amount", width: 40, editable: false, align: "right" },
+            { name: "amount", width: 40, editable: false, align: "right", searchoptions:{sopt: ['eq','lt','le','gt','ge']} },
         ],
         //editurl: "editCardData.php",
         pager: "#pager",
@@ -34,7 +34,7 @@ $(function () {
     }); 
     
     $("#list").jqGrid('navGrid', "#pager", 
-    { edit: false, add: false, del: true, search: true, refresh: true });
+    { edit: false, add: false, del: false, search: true, refresh: true });
 //        {alerttext: "No row is selected"}, // general navigator parameters
 //        {editCaption: "Edit card"},     // modal edit   window parameters
 //        {addCaption: "Add a card"},     // modal add    window parameters

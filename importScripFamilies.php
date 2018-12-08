@@ -70,12 +70,31 @@
     }
         
     echo <<<_END
-    <p class='pageMessage'>$pageMsg</p>
-    <div class="form">
-      <form method='post' action='importScripFamilies.php' enctype='multipart/form-data'>
-        <input type='file' name='filename' size='10'>
-        <button type='submit'>Import Scrip families</button>   
-      </form>
+    <div class="container">
+      <div style="float:left;margin:10px">
+        <img src='img/familyMailMerge.png'>
+      </div>
+      <div style="float:left;width:467px;height:823px;margin:10px"> 
+        <p>From the <a href='https://shop.shopwithscrip.com/Org/Manage/Report'>Reports</a>
+           page at ShopWithScrip, click <b>Run Report</b> for <b>Family Mail Merge Summary</b>.
+           <br><br>This will bring up a form as shown at left. 
+           For the Output Format, choose Comma Delimited (*.csv).<br><br>
+           Click Run Report to save the file to your computer, then select it with the form at right.
+           <br><br>If after choosing the .csv file and clicking Import Scrip Families, you get an error 
+           stating <em>The file does not appear to be a ShopWithScrip Family Mail Merge Summary</em> then
+           try opening the file in Excel and then saving as CSV (Comma delimited) (*.csv)
+        </p>
+      </div>
+      <div style="float:left;width:467px;height:423px;margin:10px"> 
+        <div class="form">
+          <p style="text-align:center">Select the .csv file</p>
+          <p class='error'>$formError</p>
+          <form method='post' action='importScripFamilies.php' enctype='multipart/form-data'>
+            <input type='file' name='filename' size='10'>
+            <button type='submit'>Import Scrip families</button>   
+          </form>
+        </div>
+      </div>
     </div>
 _END;
         

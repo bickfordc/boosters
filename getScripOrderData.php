@@ -21,8 +21,8 @@ $sidx = $_GET['sidx'];
 $sord = $_GET['sord'];
  
 // if we didn't get an column index to sort on,
-// sort on scrip family last name;
-if(!$sidx) $sidx = "family_last"; 
+// sort on id (card number);
+if(!$sidx) $sidx = "order_date"; 
 
 $s = "";
 $error = "";
@@ -35,8 +35,8 @@ else
     $where = getWhereClause();
     
     // Get the count of rows returned by the query so we can calculate total pages.
-    $sql = "SELECT family_first, family_last, family_active, family_notes, s.first, s.middle, s.last FROM scrip_families sf "
-         . "LEFT JOIN students s ON sf.student=s.id";
+    $sql = "SELECT so.order_date, so.order_id, so.scrip_first, so.scrip_last, so.rebate, s.first, s.middle, s.last FROM scrip_orders so "
+        . "LEFT JOIN students s ON so.student=s.id ";
     
     $countResult = queryPostgres($sql . $where, array());
     $count = pg_num_rows($countResult);
@@ -73,12 +73,12 @@ else
 
     // be sure to put text data in CDATA
     while($row = pg_fetch_array($result)) {
-        $s .= "<row id='". $row['family_last'].$row['family_first']."'>";            
-        $s .= "<cell>". $row['family_first']."</cell>";
-        $s .= "<cell>". $row['family_last']."</cell>";
-        $active = $row['family_active'] == 't' ? "true" : "false";
-        $s .= "<cell>".$active."</cell>";
-        $s .= "<cell><![CDATA[". $row['family_notes']."]]></cell>";
+        $s .= "<row id='". $row['order_id']."'>";            
+        $s .= "<cell>". $row['order_date']."</cell>";
+        $s .= "<cell>". $row['order_id']."</cell>";
+        $s .= "<cell>". $row['scrip_first']."</cell>";
+        $s .= "<cell>". $row['scrip_last']."</cell>";
+        $s .= "<cell>". $row['rebate']."</cell>";
         $s .= "<cell>". $row['first']."</cell>";
         $s .= "<cell>". $row['middle']."</cell>";
         $s .= "<cell>". $row['last']."</cell>";
@@ -99,9 +99,9 @@ function validate($page, $limit, $sidx, $sord, &$error) {
     if (!preg_match("/^\d+$/", $limit)) {
         $error .= "Limit value '$limit' is not numeric.\n";
     }
-//    if (!preg_match("/^[a-zA-Z0-9_\.]$/", $sidx)) {
-//        $error .= "Invalid sort index: '$sidx'\n";
-//    }
+    if (!preg_match("/^\w+$/", $sidx)) {
+        $error .= "Invalid sort index: '$sidx'\n";
+    }
     if (!preg_match("/^(asc|desc)$/i", $sord)) {
         $error .= "Invalid sort order '$sord' Must be asc or desc\n";
     }
@@ -114,6 +114,7 @@ function validate($page, $limit, $sidx, $sord, &$error) {
     }
     
     return $isValid;
+    
 }
 
 function getWhereClause() {
@@ -122,12 +123,12 @@ function getWhereClause() {
     if ($_GET['_search'] === "true") {
         $searchCol = $_GET['searchField'];
         // id is ambiguous since we have card id and student id
-        if ($searchCol == "middle") {
-            $searchCol = "s.middle";
+        if ($searchCol == "id") {
+            $searchCol = "c.id";
         }
         $searchQuery = $_GET['searchString'];
         $searchOp = $_GET['searchOper'];
-        $where = " WHERE ";
+        $where = "WHERE ";
         
         switch ($searchOp) {
             
@@ -227,4 +228,4 @@ function getWhereClause() {
     return $where;
 }
 
-
+?>
