@@ -52,6 +52,7 @@
          "</ul></li>" .
        "<li><a href='index.php'>REPORTS</a>" .
          "<ul><li><a href='boostersActivityReport.php'>Boosters activity report</a></li>" .
+         "<li><a href='studentActivityReport.php'>Student activity report</a></li>" .
        "</ul></li>" .
        "<li><a href='#'>$user</a>"  .
          "<ul><li><a href='changePassword.php'>Change Password</a></li>" .
