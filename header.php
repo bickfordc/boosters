@@ -23,6 +23,7 @@
   
   if (!$loggedin) {
       echo "<center><canvas id='logo' width='624' height='200'>$appname</canvas></center>";
+      //header("Location: login.php");
   }
   else {
      echo "<nav>" .

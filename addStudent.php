@@ -8,13 +8,14 @@ if (!$loggedin)
 }
 
 $error = "";
-$message = "";
+$message = "Add a student";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $first = trim(sanitizeString($_POST[ 'first' ]));
     $middle = trim(sanitizeString($_POST[ 'middle' ]));
     $last = trim(sanitizeString($_POST[ 'last' ]));
+    $graduation = trim(sanitizeString($_POST[ 'graduation' ]));
     
     if (!empty($first) && !empty($last)) {
         try {
@@ -22,16 +23,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
  
             $studentId = getStudentIdByName($first, $middle, $last);
             if ($studentId == NULL) {
-                $result = queryPostgres("INSERT INTO students (first, middle, last) VALUES ($1, $2, $3)", 
-                    array($first, $middle, $last)); 
+                $result = pg_query_params("INSERT INTO students (first, middle, last, graduation_year) VALUES ($1, $2, $3, $4)", 
+                    array($first, $middle, $last, $graduation)); 
 
-                $message = "Added student " . $first . " " . $middle . " " . $last;
+                if (!result) {
+                    throw new Exception(pg_last_error());
+                }
+                
+                $message = "<span class='successMessage'>Added student $first $middle $last</span>";
+                //echo "<p class='errorMessage pageMessage'>$message</p>";
             } else {
-                $message = "<span class='error'>Student " . $first . " " . $middle . " " . $last . " already exists.</span>";
+                $message = "<span class='errorMessage'>$first $middle $last already exists</spN>";
+                //echo "<p class='errorMessage pageMessage'>$message</p>";
             }
         } catch (Exception $ex) {
             $msg = $ex->getMessage();
-            $error = "<span class='error'>$msg</span>";
+            $message = "<span class='errorMessage'>$msg</span>";
         }
     } else {
         $error = "<span class='error'>Provide at least a first and last name</span>";
@@ -39,7 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
     
   echo <<<_END
-    <div>
      <p class='pageMessage'>$message</p>
      <div class='form'>
       <form method='post' action='addStudent.php' autocomplete='off'>$error
@@ -48,10 +54,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
          <input type='text' placeholder='middle name (optional)' name='middle'/>
        </div>
        <input type='text' placeholder='last name' name='last'/>
+       <input type='text' placeholder='year of graduation' name='graduation' pattern='20[0-9]{2}'/>
        <button>Add student</button>
       </form>
      </div>
-    </div>
 _END;
   
 function validateNames($names) {

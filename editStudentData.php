@@ -18,21 +18,23 @@ function addStudent() {
     $first = sanitizeString($_POST['first']);
     $last = sanitizeString($_POST['last']);
     $middle = sanitizeString($_POST['middle']);
+    $graduation = sanitizeString($_POST['graduation_year']);
     $active = sanitizeString($_POST['active']);
     
-    $result = queryPostgres("INSERT INTO students (first, middle, last, active) VALUES ($1, $2, $3, $4)", 
-            array($first, $middle, $last, $active)); 
+    $result = queryPostgres("INSERT INTO students (first, middle, last, graduation_year, active) VALUES ($1, $2, $3, $4, $5)", 
+            array($first, $middle, $last, $graduation, $active)); 
 }
 
 function editStudent() {
     $first = sanitizeString($_POST['first']);
     $middle = sanitizeString($_POST['middle']);
     $last = sanitizeString($_POST['last']);
+    $graduation = sanitizeString($_POST['graduation_year']);
     $active = sanitizeString($_POST['active']);
     $id = sanitizeString($_POST['id']);
     
-    $result = queryPostgres("UPDATE students SET first=$1, middle=$2, last=$3, active=$4 WHERE id=$5", 
-            array($first, $middle, $last, $active, $id)); 
+    $result = queryPostgres("UPDATE students SET first=$1, middle=$2, last=$3, graduation_year=$4, active=$5 WHERE id=$6", 
+            array($first, $middle, $last, $graduation, $active, $id)); 
 }
 
 function delStudent() {

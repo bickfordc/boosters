@@ -10,7 +10,7 @@ body {
 }
 
 html {
-  background:#fff
+  background:#FFFFFF
 }
 
 img {
@@ -64,12 +64,12 @@ li a:hover, .button:hover {
   color:green;
 }
 
-p.errorMessage::before {
+p.errorMessage::before, span.errorMessage::before {
     content: "\2718   ";
     color: red;
 }
 
-p.successMessage::before {
+p.successMessage::before, span.successMessage::before {
     content: "\2714   ";
     color: green;
 }

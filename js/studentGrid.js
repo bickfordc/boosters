@@ -4,14 +4,15 @@ $(function () {
         url: "getStudentData.php",
         datatype: "xml",
         mtype: "GET",
-        colNames: ["Id", "First name", "Middle name", "Last name", "Balance", "Active"],
+        colNames: ["Id", "First name", "Middle name", "Last name", "Balance", "Graduation", "Active"],
         colModel: [
             { name: "id", width: 55 },
-            { name: "first", width: 200, editable: true },
-            { name: "middle", width: 100, editable: true },
-            { name: "last", width: 200, editable: true },
-            { name: "balance", width: 75, editable: false, align: "right" },
-            { name: "active", width: 50, editable: true, search: false, align: "right", 
+            { name: "first", width: 80, editable: true },
+            { name: "middle", width: 80, editable: true },
+            { name: "last", width: 80, editable: true },
+            { name: "balance", width: 75, align: "right", searchoptions:{sopt: ['eq','lt','le','gt','ge']} },
+            { name: "graduation_year", width: 70, editable: true, align: "right", searchoptions:{sopt: ['eq','lt','le','gt','ge']} },
+            { name: "active", width: 50, editable: true, search: false, align: "center", 
               formatter: "checkbox", edittype: "checkbox",
               editoptions: { value: "true:false"} 
             }

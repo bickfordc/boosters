@@ -20,7 +20,7 @@ function drawOnCanvas(){
             context.fillStyle = gradient
             context.fillText( "Music Boosters", 200, 120)
         }
-        image.src = 'score.png';
+        image.src = 'tscore.png';
     }
 }
 
