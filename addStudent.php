@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $last = trim(sanitizeString($_POST[ 'last' ]));
     $graduation = trim(sanitizeString($_POST[ 'graduation' ]));
     
-    if (!empty($first) && !empty($last)) {
+    if (!empty($first) && !empty($last) && !empty($graduation)) {
         try {
             validateNames(array($first, $middle, $last));
  
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = "<span class='errorMessage'>$msg</span>";
         }
     } else {
-        $error = "<span class='error'>Provide at least a first and last name</span>";
+        $error = "<span class='error'>Provide first and last name and graduation year</span>";
     }
 }
     

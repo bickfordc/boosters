@@ -3,13 +3,13 @@ $(function () {
         url: "getScripOrderData.php",
         datatype: "xml",
         mtype: "GET",
-        colNames: ["Order Date", "Order ID", "Family First", "Family Last", "Rebate", "Student First", "Student Middle", "Student Last"],
+        colNames: ["Order Date", "Order ID", "Family First", "Family Last", "Rebate", "Student First", "Middle", "Student Last"],
         colModel: [
-            { name: "order_date", width: 50, editable: false },
-            { name: "order_id", width: 50, editable: false },
-            { name: "scrip_first", width: 60, editable:false },
-            { name: "scrip_last", width: 60, editable: false },
-            { name: "rebate", width: 40, editable: false, align: "right", searchoptions:{sopt: ['eq','lt','le','gt','ge']}},
+            { name: "order_date", width: 50, searchoptions:{sopt: ['eq','lt','le','gt','ge']} },
+            { name: "order_id", width: 50 },
+            { name: "scrip_first", width: 60 },
+            { name: "scrip_last", width: 60 },
+            { name: "rebate", width: 40,  align: "right", searchoptions:{sopt: ['eq','lt','le','gt','ge']}},
             { name: "first", width: 60 },
             { name: "middle", width: 60 },
             { name: "last", width: 60 }
@@ -27,10 +27,9 @@ $(function () {
         height: "auto",
         autowidth: true,
         loadError: function(jqXHR, textStatus, errorThrown) {
-               alert('HTTP status code: ' + jqXHR.status + '<br>' +
-              'textStatus: ' + textStatus + '<br>' +
-              'errorThrown: ' + errorThrown + '<br>' +
-              'HTTP message body:<br><br>' + jqXHR.responseText);
+               alert('HTTP status code: ' + jqXHR.status + 
+              'textStatus: ' + textStatus +
+              'errorThrown: ' + errorThrown);
         }
     }); 
     

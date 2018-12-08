@@ -34,10 +34,10 @@ else
 {
     $where = getWhereClause();
     
-    // Get the count of rows returned by the query so we can calculate total pages.
     $sql = "SELECT so.order_date, so.order_id, so.scrip_first, so.scrip_last, so.rebate, s.first, s.middle, s.last FROM scrip_orders so "
         . "LEFT JOIN students s ON so.student=s.id ";
     
+    // Get the count of rows returned by the query so we can calculate total pages.
     $countResult = queryPostgres($sql . $where, array());
     $count = pg_num_rows($countResult);
     

@@ -36,26 +36,34 @@ if (!validate($page, $limit, $sidx, $sord, $error))
 }
 else
 {
-    // calculate the starting position of the rows 
-    $start = $limit*$page - $limit;
-
-    // if start position is negative, set it to 0 
-    if($start <0) $start = 0; 
-
     $where = getWhereClause();
     
-    $sql = "SELECT card, reload_date, reload_amount, original_invoice_number, original_invoice_date FROM ks_card_reloads $where ORDER BY $sidx $sord OFFSET $start LIMIT $limit";
-    $result = queryPostgres($sql, array());
+    $sql = "SELECT ks.card, ks.reload_date, ks.reload_amount, ks.original_invoice_number, "
+            . "ks.original_invoice_date, s.first, s.middle, s.last "
+            . "FROM ks_card_reloads ks "
+            . "LEFT JOIN students s ON ks.student=s.id ";
     
-    $countResult = queryPostgres("SELECT card, reload_date, reload_amount, original_invoice_number, original_invoice_date FROM ks_card_reloads $where", array());
+    // Get the count of rows returned by the query so we can calculate total pages.
+    $countResult = queryPostgres($sql . $where, array());
     $count = pg_num_rows($countResult);
     
+    // calculate the starting position of the rows 
+    $start = $limit*$page - $limit;
+   
+    // if start position is negative, set it to 0 
+    if($start <0) $start = 0; 
+    
+    // Perform the same query but with offset and limit so we have just one page of rows.
+    $sql = $sql . $where . " ORDER BY $sidx $sord OFFSET $start LIMIT $limit";
+    $result = queryPostgres($sql , array());
+    
+    // calculate the total pages for the query 
     if( $count > 0 && $limit > 0) { 
         $total_pages = ceil($count/$limit); 
     } else { 
         $total_pages = 0; 
     } 
-    
+
     // if the requested page is greater than the total, 
     // set the requested page to total pages 
     if ($page > $total_pages) $page=$total_pages;
@@ -77,6 +85,9 @@ else
         $s .= "<cell>". $row['original_invoice_number']."</cell>";
         $s .= "<cell>". $row['original_invoice_date']."</cell>";
         $s .= "<cell>". $row['reload_amount']."</cell>";
+        $s .= "<cell><![CDATA[". $row['first']."]]></cell>"; 
+        $s .= "<cell><![CDATA[". $row['middle']."]]></cell>";
+        $s .= "<cell><![CDATA[". $row['last']."]]></cell>";
         $s .= "</row>";
     }
     $s .= "</rows>"; 

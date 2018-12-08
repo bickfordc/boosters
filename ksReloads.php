@@ -3,6 +3,7 @@
     require 'vendor/autoload.php';
     
     require_once 'header.php';
+    require_once 'RebatePercentages.php';
     require_once 'orm/KsReload.php';
     require_once 'orm/Student.php';
      
@@ -19,7 +20,7 @@
     $fatalError = false;
     $reportComplete = false;
     $name;
-    $pageMsg = "Select a King Soopers .csv file";
+    $pageMsg = "Select the Neighborhood Rewards Statement from King Soopers in .csv format";
     
     if ($_FILES)  
     {   
@@ -70,20 +71,8 @@
                 $transactions[] = $ksReload;
             }
             // Iterate over the transactions and determine how student balances are impacted
-            $affectedStudents = array();
-            foreach ($transactions as $trans) {
-                
-                if (($id = $trans->getStudentId()) != NULL) {
-                    // The card is assigned to a student. 
-                    // Add the transaction amount to the students running total
-                    $student = $affectedStudents[$id];
-                    if ($student == NULL) {
-                        $student = new Student($id);
-                        $affectedStudents[$id] = $student;
-                    }
-                    $student->adjustBalance($trans->getAmount() * STUDENT_PERCENTAGE);
-                }
-            }
+            $affectedStudents = getAffectedStudents($transactions);
+
             // Make all the database updates
             try {
                 pg_query("BEGIN");
@@ -119,7 +108,7 @@
     <div class="form">
       <form method='post' action='ksReloads.php' enctype='multipart/form-data'>
         <input type='file' name='filename' size='10'>
-        <button type='submit'>Upload</button>   
+        <button type='submit'>Import card reloads</button>   
       </form>
     </div>
 _END;
@@ -147,81 +136,102 @@ _END;
         return $isValid;
     }
         
-    function processKingSoopers($tmpName)
-    {
-        $cardTotals = array();
-        if (($file = fopen($tmpName, "r")) !== false)
-        {
-            $line = 0;
-            while(($row = fgetcsv($file, 300, ",")) !== false)
-            {
-                if (++$line < 3)
-                {
-                    // 3rd line is start of real data
-                    continue;
+    function getAffectedStudents($reloads) {
+        $affectedStudents = array();
+        foreach ($reloads as $reload) {
+            if (($id = $reload->getStudentId()) != NULL) {
+                if (Student::isStudentActive($id)) {
+                    // The card is assigned to an active student. 
+                    // Add the transaction amount to the students running total
+                    $student = $affectedStudents[$id];
+                    if ($student == NULL) {
+                        $student = new Student($id);
+                        $affectedStudents[$id] = $student;
+                    }
+                    $student->adjustBalance($reload->getAmount() 
+                        * RebatePercentages::$KS_CARD_RELOAD 
+                        * RebatePercentages::$STUDENT_SHARE);
                 }
-                $transactDate = $row[0];
-                $cardNumber = $row[1];
-                $cardNumber = modifyKingSoopersCardNumber($row[1]);
-                if ($cardNumber == "")
-                {
-                    // Ignore any line without a card number
-                    continue;
-                }
-                $amount = handleCurrency($row[5]);
-                $cardTotals[$cardNumber] += $amount;
-            }     
+            }
         }
-        else
-        {
-            $pageMsg = "Could not open file $tmpName";
-        }
-        return $cardTotals;
-        
+        return $affectedStudents;
     }
+    
+//    function processKingSoopers($tmpName)
+//    {
+//        $cardTotals = array();
+//        if (($file = fopen($tmpName, "r")) !== false)
+//        {
+//            $line = 0;
+//            while(($row = fgetcsv($file, 300, ",")) !== false)
+//            {
+//                if (++$line < 3)
+//                {
+//                    // 3rd line is start of real data
+//                    continue;
+//                }
+//                $transactDate = $row[0];
+//                $cardNumber = $row[1];
+//                $cardNumber = modifyKingSoopersCardNumber($row[1]);
+//                if ($cardNumber == "")
+//                {
+//                    // Ignore any line without a card number
+//                    continue;
+//                }
+//                $amount = handleCurrency($row[5]);
+//                $cardTotals[$cardNumber] += $amount;
+//            }     
+//        }
+//        else
+//        {
+//            $pageMsg = "Could not open file $tmpName";
+//        }
+//        return $cardTotals;
+//        
+//    }
     
 
     
-    function getCardData($cardTotals, &$cardsNotFound, &$soldCardTotal, &$unsoldCardTotal)
-    {
-        $cards = array();
-        $cardData = array();
-        $notFoundCount = 0;
-        foreach ($cardTotals as $key => $val)
-        {
-            $result = queryPostgres("SELECT * FROM cards where id=$1", array($key));
-            if (pg_num_rows($result) == 0)
-            {
-                $cardsNotFound[$notFoundCount] = $key;
-                $notFoundCount++;
-                //return $cards;
-            }
-            if (pg_num_rows($result) > 1)
-            {
-                // this should never happen.
-                die("Card $key is not unique in database.");
-            }
-            else
-            {
-                $row = pg_fetch_array($result);
-                $cardData["sold"] = $row["sold"];
-                $cardData["cardHolder"] = $row["card_holder"];
-                $cardData["total"] = $val;
-                $cardData["cardNumber"] = $key;
-                if ($cardData["sold"] == "t")
-                {
-                    $cardData["studentId"] = getStudentIdByCard($key);
-                    $soldCardTotal += $val;
-                }
-                else
-                {
-                    $unsoldCardTotal += $val;
-                }
-                $cards[] = $cardData;
-            }
-        }
-        return $cards;  // includes both sold and unsold cards.
-    }
+//    function getCardData($cardTotals, &$cardsNotFound, &$soldCardTotal, &$unsoldCardTotal)
+//    {
+//        $cards = array();
+//        $cardData = array();
+//        $notFoundCount = 0;
+//        foreach ($cardTotals as $key => $val)
+//        {
+//            $result = queryPostgres("SELECT * FROM cards where id=$1", array($key));
+//            if (pg_num_rows($result) == 0)
+//            {
+//                $cardsNotFound[$notFoundCount] = $key;
+//                $notFoundCount++;
+//                //return $cards;
+//            }
+//            if (pg_num_rows($result) > 1)
+//            {
+//                // this should never happen.
+//                die("Card $key is not unique in database.");
+//            }
+//            else
+//            {
+//                $row = pg_fetch_array($result);
+//                $cardData["sold"] = $row["sold"];
+//                $cardData["cardHolder"] = $row["card_holder"];
+//                $cardData["total"] = $val;
+//                $cardData["cardNumber"] = $key;
+//                if ($cardData["sold"] == "t")
+//                {
+//                    $cardData["studentId"] = getStudentIdByCard($key);
+//                    $soldCardTotal += $val;
+//                }
+//                else
+//                {
+//                    $unsoldCardTotal += $val;
+//                }
+//                $cards[] = $cardData;
+//            }
+//        }
+//        return $cards;  // includes both sold and unsold cards.
+//    }
     
     // given cards, an array of cardData arrays
     //   cards[0] => 
@@ -240,133 +250,133 @@ _END;
     //      first   => Emma
     //      last    => Bickford
     //      id      => 1156
-    function groupCardsByStudent($students, $cards, $cardType)
-    {
-        //$students = array();    
-        $cardKey = $cardType . "Cards";
-        
-        foreach($cards as $value)
-        {
-            if ($value["sold"] == "t")
-            {
-                // Get data from students table
-                $studentId = $value["studentId"];
-                $result = queryPostgres("SELECT * FROM students WHERE id=$1", array($studentId));
-                $row = pg_fetch_array($result);
-                $first = $row["first"];
-                $last = $row["last"];
-                $studentKey = $last . " " . $first;
-                
-                if (array_key_exists($studentKey, $students))
-                {
-                    $students[$studentKey][$cardKey][] = $value;
-                }
-                else
-                {
-                    $studCards = array($value);
-                    $studData = array($cardKey => $studCards, "first" => $first, "last" => $last, "id" => $studentId);
-                    $students[$studentKey] = $studData;
-                }                        
-            }
-        }
-        
-        // Calculate student total by card type
-        foreach($students as &$studData)
-        {
-            $sum = 0;
-            $cardData = $studData[$cardKey];
-            foreach($cardData as $card)
-            {
-                $sum += $card["total"];
-            }
-            
-            $studData[$cardKey . "Total"] = $sum;
-        }       
-        
-        return $students;
-    }
-    
-    function addScripFamiliesToStudents($students, $scripFamilies)
-    {
-        foreach($scripFamilies as $family)
-        {
-            if ($family->getStudentId() === NULL)
-            {
-                continue;
-            }
-                
-            $foundStudent = false;
-            foreach ($students as $student)
-            {
-                if ($student["id"] == $family->getStudentId())
-                {
-                    $last = $student["last"];
-                    $first = $student["first"];
-                    $key = $last . " " . $first;
-                    $students[$key]["scripFamilies"][] = $family;
-//                    $students[$key]["scripTotalValue"] += $family->getTotalValue();
-//                    $students[$key]["scripTotalRebate"] += $family->getTotalRebate();
-                    $foundStudent = true;
-                    break;
-                }
-            }
-            if (!$foundStudent)
-            {
-                // This is a student that is not already in student array because 
-                // there were no grocery card transactions
-                $first = $family->getStudentFirstName();
-                $last = $family->getStudentLastName();
-                $key = $last . " " . $first;
-                $students[$key]["scripFamilies"][] = $family;
-                $students[$key]["first"] = $first;
-                $students[$key]["last"] = $last;
-//                $students[$key]["scripTotalValue"] += $family->getTotalValue();
-//                $students[$key]["scripTotalRebate"] += $family->getTotalRebate();
-            }
-        }
-        return $students;
-    }
-    
-    function getStudentIdByCard($cardNumber)
-    {
-        $result = queryPostgres("SELECT * FROM student_cards WHERE card=$1", array($cardNumber));
-        if (($row = pg_fetch_array($result)) === false)
-        {
-            $pageMsg = "Card $cardNumber is marked as sold but is not associated with a student.";
-            $fatalError = true;
-        }
-        else
-        {
-            return $row["student"];
-        }
-    }
-    
-    // ($150.75) => -150.75
-    // $20       => 20
-    // $1,100.25 => 1100.25
-    //
-    function handleCurrency($moneyString)
-    {
-        $isNegative = false;
-        
-        if (substr($moneyString, 0, 1) == "(")
-        {
-            $isNegative = true;
-        }
-        
-        // strip off parens and $ from ends
-        $moneyString = trim($moneyString, "($)");
-        
-        // strip out commas
-        $amount = str_replace(",", "", $moneyString);
-        
-        if ($isNegative)
-        {
-            $amount *= -1.00;
-        }
-        
-        return $amount;
-    }
+//    function groupCardsByStudent($students, $cards, $cardType)
+//    {
+//        //$students = array();    
+//        $cardKey = $cardType . "Cards";
+//        
+//        foreach($cards as $value)
+//        {
+//            if ($value["sold"] == "t")
+//            {
+//                // Get data from students table
+//                $studentId = $value["studentId"];
+//                $result = queryPostgres("SELECT * FROM students WHERE id=$1", array($studentId));
+//                $row = pg_fetch_array($result);
+//                $first = $row["first"];
+//                $last = $row["last"];
+//                $studentKey = $last . " " . $first;
+//                
+//                if (array_key_exists($studentKey, $students))
+//                {
+//                    $students[$studentKey][$cardKey][] = $value;
+//                }
+//                else
+//                {
+//                    $studCards = array($value);
+//                    $studData = array($cardKey => $studCards, "first" => $first, "last" => $last, "id" => $studentId);
+//                    $students[$studentKey] = $studData;
+//                }                        
+//            }
+//        }
+//        
+//        // Calculate student total by card type
+//        foreach($students as &$studData)
+//        {
+//            $sum = 0;
+//            $cardData = $studData[$cardKey];
+//            foreach($cardData as $card)
+//            {
+//                $sum += $card["total"];
+//            }
+//            
+//            $studData[$cardKey . "Total"] = $sum;
+//        }       
+//        
+//        return $students;
+//    }
+//    
+//    function addScripFamiliesToStudents($students, $scripFamilies)
+//    {
+//        foreach($scripFamilies as $family)
+//        {
+//            if ($family->getStudentId() === NULL)
+//            {
+//                continue;
+//            }
+//                
+//            $foundStudent = false;
+//            foreach ($students as $student)
+//            {
+//                if ($student["id"] == $family->getStudentId())
+//                {
+//                    $last = $student["last"];
+//                    $first = $student["first"];
+//                    $key = $last . " " . $first;
+//                    $students[$key]["scripFamilies"][] = $family;
+////                    $students[$key]["scripTotalValue"] += $family->getTotalValue();
+////                    $students[$key]["scripTotalRebate"] += $family->getTotalRebate();
+//                    $foundStudent = true;
+//                    break;
+//                }
+//            }
+//            if (!$foundStudent)
+//            {
+//                // This is a student that is not already in student array because 
+//                // there were no grocery card transactions
+//                $first = $family->getStudentFirstName();
+//                $last = $family->getStudentLastName();
+//                $key = $last . " " . $first;
+//                $students[$key]["scripFamilies"][] = $family;
+//                $students[$key]["first"] = $first;
+//                $students[$key]["last"] = $last;
+////                $students[$key]["scripTotalValue"] += $family->getTotalValue();
+////                $students[$key]["scripTotalRebate"] += $family->getTotalRebate();
+//            }
+//        }
+//        return $students;
+//    }
+//    
+//    function getStudentIdByCard($cardNumber)
+//    {
+//        $result = queryPostgres("SELECT * FROM student_cards WHERE card=$1", array($cardNumber));
+//        if (($row = pg_fetch_array($result)) === false)
+//        {
+//            $pageMsg = "Card $cardNumber is marked as sold but is not associated with a student.";
+//            $fatalError = true;
+//        }
+//        else
+//        {
+//            return $row["student"];
+//        }
+//    }
+//    
+//    // ($150.75) => -150.75
+//    // $20       => 20
+//    // $1,100.25 => 1100.25
+//    //
+//    function handleCurrency($moneyString)
+//    {
+//        $isNegative = false;
+//        
+//        if (substr($moneyString, 0, 1) == "(")
+//        {
+//            $isNegative = true;
+//        }
+//        
+//        // strip off parens and $ from ends
+//        $moneyString = trim($moneyString, "($)");
+//        
+//        // strip out commas
+//        $amount = str_replace(",", "", $moneyString);
+//        
+//        if ($isNegative)
+//        {
+//            $amount *= -1.00;
+//        }
+//        
+//        return $amount;
+//    }
     
 
     
@@ -380,22 +390,22 @@ _END;
      * Add the prefix, remove the dashes, and add spacing to match how the number 
      * is presented on the card (which is also how we have it stored in the database)
      */
-    function modifyKingSoopersCardNumber($cardNumber) 
-    {
-        $modifiedCardNumber = $cardNumber;
+//    function modifyKingSoopersCardNumber($cardNumber) 
+//    {
+//        $modifiedCardNumber = $cardNumber;
+//        
+//        // strip everything but digits
+//        $strippedCardNumber = preg_replace("/[^0-9]/", "", $cardNumber);
+//        
+//        // Add the prefix 
+//        $strippedCardNumber = "60064959" . $strippedCardNumber;
+//        
+//        if (strlen($strippedCardNumber) == 19) 
+//        {
+//            $modifiedCardNumber = formatCardNumber($strippedCardNumber, "KS");
+//        }
+//        
+//        return $modifiedCardNumber;
+//    }
         
-        // strip everything but digits
-        $strippedCardNumber = preg_replace("/[^0-9]/", "", $cardNumber);
-        
-        // Add the prefix 
-        $strippedCardNumber = "60064959" . $strippedCardNumber;
-        
-        if (strlen($strippedCardNumber) == 19) 
-        {
-            $modifiedCardNumber = formatCardNumber($strippedCardNumber, "KS");
-        }
-        
-        return $modifiedCardNumber;
-    }
-        
-?>
+

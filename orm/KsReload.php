@@ -11,6 +11,7 @@ class KsReload {
     private $originalInvoiceNumber;
     private $originalInvoiceDate;
     private $amount;
+    private $student;
     
     function __construct($card, $transactionDate, $originalInvoiceNumber, $originalInvoiceDate, $amount)
     {
@@ -19,6 +20,11 @@ class KsReload {
         $this->originalInvoiceNumber = $originalInvoiceNumber;
         $this->originalInvoiceDate = $originalInvoiceDate;
         $this->amount = $this->handleCurrency($amount);
+        
+        $studentId = $this->getStudentId();
+        if ($studentId){
+            $this->student = new Student($studentId);
+        }
     }
     
     public function getCard() {
@@ -41,6 +47,10 @@ class KsReload {
         return $this->amount;
     }
 
+    public function getStudent() {
+        return $this->student;
+    }
+    
     public function setCard($card) {
         $this->card = $card;
     }
@@ -62,17 +72,35 @@ class KsReload {
     }
         
     public function insertToDb() {
-        $result = pg_query_params("INSERT INTO ks_card_reloads (card, reload_date, "
-                . "reload_amount, original_invoice_number, original_invoice_date) VALUES ($1, $2, $3, $4, $5)", 
-                array(
-                $this->card,
-                $this->transactionDate,
-                $this->amount,
-                $this->originalInvoiceNumber,
-                $this->originalInvoiceDate
-                ));
-        if (!$result) {
-            throw new Exception(pg_last_error());
+        
+        if ($this->student && $this->student->isActive()) {
+            $result = pg_query_params("INSERT INTO ks_card_reloads (card, reload_date, "
+                . "reload_amount, original_invoice_number, original_invoice_date, student) VALUES ($1, $2, $3, $4, $5, $6)", 
+            array(
+            $this->card,
+            $this->transactionDate,
+            $this->amount,
+            $this->originalInvoiceNumber,
+            $this->originalInvoiceDate,
+            $this->student->getId()
+            ));
+            if (!$result) {
+                throw new Exception(pg_last_error());
+            }
+        }
+        else {
+            $result = pg_query_params("INSERT INTO ks_card_reloads (card, reload_date, "
+                    . "reload_amount, original_invoice_number, original_invoice_date) VALUES ($1, $2, $3, $4, $5)", 
+                    array(
+                    $this->card,
+                    $this->transactionDate,
+                    $this->amount,
+                    $this->originalInvoiceNumber,
+                    $this->originalInvoiceDate
+                    ));
+            if (!$result) {
+                throw new Exception(pg_last_error());
+            }
         }
     }
     
