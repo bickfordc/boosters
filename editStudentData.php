@@ -30,6 +30,9 @@ function editStudent() {
     $middle = sanitizeString($_POST['middle']);
     $last = sanitizeString($_POST['last']);
     $graduation = sanitizeString($_POST['graduation_year']);
+    if (empty($graduation)) {
+        $graduation = NULL;
+    }
     $active = sanitizeString($_POST['active']);
     $id = sanitizeString($_POST['id']);
     
