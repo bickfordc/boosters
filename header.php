@@ -1,7 +1,8 @@
 <?php 
   session_start();
 
-  echo "<!DOCTYPE html>\n<html><head>";
+  echo "<!DOCTYPE html>\n<html><head>" .
+  "<link rel='shortcut icon' type='image/x-icon' href='/favicon.ico'>";
 
   //require_once 'functions.php';
   //require_once($_SERVER["DOCUMENT_ROOT"] . "/functions.php");
