@@ -78,6 +78,10 @@ class Student {
         }
     }
 
+    public function getFullName() {
+        return "$this->first $this->middle $this->last";
+    }
+    
     public function setId($id) {
         $this->id = $id;
     }
