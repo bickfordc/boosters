@@ -177,13 +177,61 @@ EOF;
         "</tr>";
     }
     
+    protected function writeScripHeaders()
+    {
+        $styleRab = "class='tg-rab'";
+        $styleLab = "class='tg-lab'";
+        
+        $this->table .=         
+        "<tr>" .
+            "<td $styleLab>Date</td>" .
+            "<td $styleLab>Family</td>" .
+            "<td $styleRab>Amount</td>" .
+            "<td $styleRab>Rebate</td>" .
+            "<td $styleRab>Boosters Share</td>" .
+            "<td $styleRab>Student Share</td>" .
+            "<td></td>" .
+        "</tr>";
+    }
+    
+    protected function writeWithdrawalHeaders()
+    {
+        $styleRab = "class='tg-rab'";
+        $styleLab = "class='tg-lab'";
+        
+        $this->table .=         
+        "<tr>" .
+            "<td $styleLab>Date</td>" .
+            "<td $styleLab>Purpose</td>" .
+            "<td $styleLab colspan='3'>Notes</td>" .
+            "<td $styleRab>Amount</td>" .
+            "<td></td>" .
+        "</tr>";
+    }
+    
+    private function writeScripOrder($date, $family, $amount, $rebate) {
+        
+        $styleRa = "class='tg-ra'";
+        
+        $this->table .=
+        "<tr>" .
+            "<td>$date</td>" .
+            "<td>$family</td>" .
+            "<td $styleRa>$amount</td>" .
+            "<td $styleRa>$rebate</td>" .
+            "<td></td>" .
+            "<td></td>" .
+            "<td></td>" .
+        "</tr>";
+    }
+    
     private function writeCardReload($date, $card, $amount)
     {
         $styleRa = "class='tg-ra'";
         
         $rebate = $amount * RebatePercentages::$KS_CARD_RELOAD * RebatePercentages::$STUDENT_SHARE;
-        $amountStr = $this->numberToMoney($amount);
-        $rebateStr = $this->numberToMoney($rebate);
+        $amountStr = $this->format($amount);
+        $rebateStr = $this->format($rebate);
         
         $this->table .=
         "<tr>" .
@@ -193,6 +241,22 @@ EOF;
             "<td $styleRa>$rebateStr</td>" .
             "<td></td>" .
             "<td></td>" .
+            "<td></td>" .
+        "</tr>";
+    }
+    
+    private function writeWithdrawal($date, $purpose, $notes, $amount)
+    {
+        $styleRa = "class='tg-ra'";
+        
+        $amountStr = $this->format($amount);
+        
+        $this->table .=
+        "<tr>" .
+            "<td>$date</td>" .
+            "<td>$purpose</td>" .
+            "<td colSpan='3'>$notes</td>" .
+            "<td $styleRa>$amountStr</td>" .
             "<td></td>" .
         "</tr>";
     }
@@ -211,10 +275,10 @@ EOF;
         $boostersShare = $rebate * RebatePercentages::$BOOSTERS_SHARE;
         $studentShare = $rebate * RebatePercentages::$STUDENT_SHARE;
         
-        $totalAmt = $this->numberToMoney($total);
-        $rebateAmt = $this->numberToMoney($rebate);
-        $boostersShareAmt = $this->numberToMoney($boostersShare);
-        $studentShareAmt = $this->numberToMoney($studentShare);
+        $totalAmt = $this->format($total);
+        $rebateAmt = $this->format($rebate);
+        $boostersShareAmt = $this->format($boostersShare);
+        $studentShareAmt = $this->format($studentShare);
         
         $this->table .=
         "<tr>" .
@@ -236,6 +300,36 @@ EOF;
         $this->writeLine();
     }
     
+    protected function writeScripTotal($totalAmount, $totalRebate)
+    {
+        $styleLab = "class='tg-lab'";
+        $stylePlab = "class='tg-plab'";
+        $styleRa  = "class='tg-ra'";
+        $styleB3sl = "class='tg-b3sl'";
+        $styleR3sl = "class='tg-r3sl'";
+        $styleB3sr = "class='tg-b3sr'";
+        $styleR3sr = "class='tg-r3sr'";
+               
+        $boostersShare = $totalRebate * RebatePercentages::$BOOSTERS_SHARE;
+        $studentShare = $totalRebate * RebatePercentages::$STUDENT_SHARE;
+        
+        $totalAmt = $this->format($totalAmount);
+        $rebateAmt = $this->format($totalRebate);
+        $boostersShareAmt = $this->format($boostersShare);
+        $studentShareAmt = $this->format($studentShare);
+        
+        $this->table .=
+        "<tr>" .
+            "<td $stylePlab colspan='2'>Total</td>" .
+            "<td $styleRa>$totalAmt</td>" .
+            "<td $styleRa>$rebateAmt</td>" .
+            "<td $styleRa>$boostersShareAmt</td>" .
+            "<td $styleB3sl>$studentShareAmt</td>" .
+        "</tr>";     
+ 
+        $this->writeLine();
+    }
+    
     protected function writeStudentKsReloads($reloads) {
         $total = 0;
         foreach ($reloads as $reload) {
@@ -246,7 +340,34 @@ EOF;
         }
         $this->writeCardsTotal($total);
     }
-            
+         
+    protected function writeScripOrders($orders) {
+        $totalAmount = 0;
+        $totalRebate = 0;
+        foreach ($orders as $order) {
+            $this->writeScripOrder(
+                            $order['order_date'],
+                            $order['scrip_first'] . " " . $order['scrip_last'],
+                            $order['order_amount'],
+                            $order['rebate']);
+            $totalAmount += $order['order_amount'];
+            $totalRebate += $order['rebate'];
+        }
+        $this->writeScripTotal($totalAmount, $totalRebate);
+    }
+    
+    protected function writeWithdrawals($debits) {
+        $total = 0;
+        foreach ($debits as $debit) {
+            $this->writeWithdrawal(
+                            $debit['date'],
+                            $debit['purpose'],
+                            $debit['notes'],
+                            $debit['amount']);
+            $total += $debit['amount'];
+        }
+        $this->writeWithdrawalTotal($total);
+    }
     
     protected function buildTable()
     {
@@ -267,6 +388,15 @@ EOF;
         }
         $result = $this->tableForHtml; 
         return $result;
+    }
+    
+    private function format($number) {
+        // format mumbers with a '0' for padding
+        // minimum 1 charcter before the decimal point,
+        // and always two characters after. And treat it 
+        // as a floating point number (f)
+        // So 0 becomes 0.00
+        return sprintf("%01.2f", $number);
     }
     
     private function numberToMoney($number)
