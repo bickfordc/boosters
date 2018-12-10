@@ -16,6 +16,7 @@ class ScripOrder {
     private $orderId;
     private $orderCount;
     private $orderDate;
+    private $orderAmount;
     private $rebate;
     private $student;
     
@@ -30,6 +31,7 @@ class ScripOrder {
         $this->orderCount = $row[4];
         $this->orderId = $row[5];
         $this->orderDate = $this->parseDate($row[6]);
+        $this->orderAmount = $row[7];
         $this->rebate = floatval($row[7]) - floatval($row[8]);
         
         $studentId = $this->getStudentId();
@@ -147,11 +149,12 @@ class ScripOrder {
         
         if ($this->student && $this->student->isActive())
         {
-            $result = pg_query_params("INSERT INTO scrip_orders VALUES ($1, $2, $3, $4, $5, $6, $7)", 
+            $result = pg_query_params("INSERT INTO scrip_orders VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", 
             array(
                 $this->orderId,
                 $this->orderCount,
                 $this->orderDate,
+                $this->orderAmount,
                 $this->rebate,
                 $this->familyFirst,
                 $this->familyLast,
@@ -164,11 +167,12 @@ class ScripOrder {
         else
         {
             $result = pg_query_params("INSERT INTO scrip_orders (order_id, order_count, "
-                . "order_date, rebate, scrip_first, scrip_last) VALUES ($1, $2, $3, $4, $5, $6)", 
+                . "order_date, order_amount, rebate, scrip_first, scrip_last) VALUES ($1, $2, $3, $4, $5, $6, $7)", 
                 array(
                 $this->orderId,
                 $this->orderCount,
                 $this->orderDate,
+                $this->orderAmount,
                 $this->rebate,
                 $this->familyFirst,
                 $this->familyLast
