@@ -11,8 +11,8 @@ class ActivityReport {
     private $style;
     protected $table;
     private $tableForHtml = null;
-    private $startDate;
-    private $endDate;
+    protected $startDate;
+    protected $endDate;
     
     function __construct($startDate, $endDate) {
         $this->initStyle();

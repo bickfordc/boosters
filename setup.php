@@ -109,6 +109,7 @@ EOF;
     (order_id varchar(10) PRIMARY KEY,
      order_count smallint,
      order_date date,
+     order_amount numeric(10,2),
      rebate numeric(10,2),
      scrip_first varchar(32),
      scrip_last varchar(32),
