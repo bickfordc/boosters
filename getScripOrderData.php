@@ -34,7 +34,7 @@ else
 {
     $where = getWhereClause();
     
-    $sql = "SELECT so.order_date, so.order_id, so.scrip_first, so.scrip_last, so.rebate, s.first, s.middle, s.last FROM scrip_orders so "
+    $sql = "SELECT so.order_date, so.order_id, so.scrip_first, so.scrip_last, so.order_amount, so.rebate, s.first, s.middle, s.last FROM scrip_orders so "
         . "LEFT JOIN students s ON so.student=s.id ";
     
     // Get the count of rows returned by the query so we can calculate total pages.
@@ -78,6 +78,7 @@ else
         $s .= "<cell>". $row['order_id']."</cell>";
         $s .= "<cell>". $row['scrip_first']."</cell>";
         $s .= "<cell>". $row['scrip_last']."</cell>";
+        $s .= "<cell>". $row['order_amount']."</cell>";
         $s .= "<cell>". $row['rebate']."</cell>";
         $s .= "<cell>". $row['first']."</cell>";
         $s .= "<cell>". $row['middle']."</cell>";
