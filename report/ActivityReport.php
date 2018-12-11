@@ -145,19 +145,19 @@ EOF;
     protected function writeTitle($title)
     {
         $style = "class='tg-title'";
-        $this->table .= "<tr><th $style colspan='7'>$title</th></tr>";
+        $this->table .= "<tr><th $style colspan='6'>$title</th></tr>";
     }
     
     protected function writeDate()
     {
         $dates = $this->getStartDate() . " through " . $this->endDate;
         $style = "class='tg-title'";
-        $this->table .= "<tr><th $style colspan='7'>$dates</th></tr>";
+        $this->table .= "<tr><th $style colspan='6'>$dates</th></tr>";
     }
     
     protected function writeLine()
     {
-        $this->table .= "<tr><td colspan='7'></td></tr>";
+        $this->table .= "<tr><td colspan='6'></td></tr>";
     }
     
     protected function writeCardHeaders()
@@ -173,7 +173,6 @@ EOF;
             "<td $styleRab>Rebate</td>" .
             "<td $styleRab>Boosters Share</td>" .
             "<td $styleRab>Student Share</td>" .
-            "<td></td>" .
         "</tr>";
     }
     
@@ -190,7 +189,6 @@ EOF;
             "<td $styleRab>Rebate</td>" .
             "<td $styleRab>Boosters Share</td>" .
             "<td $styleRab>Student Share</td>" .
-            "<td></td>" .
         "</tr>";
     }
     
@@ -205,7 +203,6 @@ EOF;
             "<td $styleLab>Purpose</td>" .
             "<td $styleLab colspan='3'>Notes</td>" .
             "<td $styleRab>Amount</td>" .
-            "<td></td>" .
         "</tr>";
     }
     
@@ -219,7 +216,6 @@ EOF;
             "<td>$family</td>" .
             "<td $styleRa>$amount</td>" .
             "<td $styleRa>$rebate</td>" .
-            "<td></td>" .
             "<td></td>" .
             "<td></td>" .
         "</tr>";
@@ -241,7 +237,6 @@ EOF;
             "<td $styleRa>$rebateStr</td>" .
             "<td></td>" .
             "<td></td>" .
-            "<td></td>" .
         "</tr>";
     }
     
@@ -257,7 +252,6 @@ EOF;
             "<td>$purpose</td>" .
             "<td colSpan='3'>$notes</td>" .
             "<td $styleRa>$amountStr</td>" .
-            "<td></td>" .
         "</tr>";
     }
     
@@ -367,6 +361,19 @@ EOF;
             $total += $debit['amount'];
         }
         $this->writeWithdrawalTotal($total);
+    }
+    
+    private function writeWithdrawalTotal($total) {
+        $totalAmt = $this->format($total);
+        
+        $stylePlab = "class='tg-plab'";
+        $styleRa  = "class='tg-ra'";
+        
+        $this->table .=
+        "<tr>" .
+            "<td $stylePlab colspan='2'>Total</td>" .
+            "<td $styleRa colspan='4'>$totalAmt</td>" .
+        "</tr>";
     }
     
     protected function buildTable()

@@ -113,7 +113,7 @@ function convertWithdrawalPurpose($purposeNum) {
             $purposeStr = "uniforms";
             break;
         case 3:
-            $purposeStr = "instuments";
+            $purposeStr = "instruments";
             break;
         case 4:
             $purposeStr = "lessons";
