@@ -46,9 +46,9 @@ echo <<<_END
 <p class='pageMessage'>$pageMsg</p>
         
 <div class="form">
-      <form method='post' action='withdrawal.php'>
+      <form method='post' action='withdrawal.php' autocomplete="off">
         <div id='info' class='error'>$error</div>
-        <input type='text' placeholder='student' id='student' name='student'>
+        <input type='text' placeholder='student' id='student' name='student' autocomplete="off">
         <div id="results" class='searchresults'></div>
         <input type='text' placeholder='withdrawal amount (e.g. 45.90)' id='amount' name='amount' pattern='[0-9]{1,6}.[0-9]{2}'>
         <input type='text' placeholder='notes (optional, 80 characters)' id='notes' name='notes'>

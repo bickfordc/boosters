@@ -7,7 +7,10 @@
     require_once 'orm/KsReload.php';
     require_once 'orm/Student.php';
      
-    if (!$loggedin) die();
+    if (!$loggedin) 
+    {
+        header("Location: login.php");
+    }
 
     // Handle Mac OS X line endings (LF) on uploaded .csv files
     ini_set("auto_detect_line_endings", true);

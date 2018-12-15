@@ -2,6 +2,11 @@
 
     require_once 'header.php';
 
+    if (!$loggedin) 
+    {
+        header("Location: login.php");
+    }
+    
     $error = "";    
     $resetCode = "";
     $user = "";

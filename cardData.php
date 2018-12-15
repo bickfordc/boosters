@@ -2,6 +2,11 @@
 
 require_once 'header.php';
 
+if (!$loggedin) 
+{
+  header("Location: login.php");
+}
+
 echo <<<_END
 <link rel="stylesheet" type="text/css" media="screen" href="css/ui-custom/jquery-ui.theme.css" />
 <link rel="stylesheet" type="text/css" media="screen" href="css/ui.jqgrid.css" />
