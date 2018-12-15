@@ -41,6 +41,18 @@ if ($gatheredRequirements == false) {
       <form method='post' action='boostersActivityReport.php' autocomplete='off'>$error
         <input type='text' placeholder='start date' name='startDate' id='startDate'/>
         <input type='text' placeholder='end date' name='endDate' id='endDate'/>
+        <div>
+        <label>
+          <input type="checkbox" name="kscards" id="kscards" checked/>King Soopers cards</label>
+        </div>
+        <div>
+        <label>
+          <input type="checkbox" name="scrip" id="scrip" checked/>ShopWithScrip</label>
+        </div>
+        <div>
+        <label>
+          <input type="checkbox" name="withdrawals" id="withdrawals" checked/>Student withdrawals</label>
+        </div>
         <button>Run activity report</button>
       </form>
     </div>
