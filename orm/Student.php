@@ -159,4 +159,20 @@ class Student {
             return FALSE;
         }
     }
+    
+    public static function getStudentName($studentId) {
+        $result = pg_query_params("SELECT first, middle, last FROM students WHERE id=$1", 
+            array($studentId));
+        
+        if (!$result) {
+           throw new Exception(pg_last_error());
+        }
+        
+        if (pg_num_rows($result) == 0) {
+            throw new Exception("No student found with id = $studentId");
+        }
+        
+        $row = pg_fetch_row($result);
+        return $row[0] . " " . $row[1] . " " . $row[2];
+    }
 }

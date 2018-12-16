@@ -15,19 +15,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $startDate = trim(sanitizeString($_POST[ 'startDate' ]));
     $endDate = trim(sanitizeString($_POST[ 'endDate' ]));
+    $kscards = trim(sanitizeString($_POST[ 'kscards' ]));
+    $scrip = trim(sanitizeString($_POST[ 'scrip' ]));
+    $withdrawals = trim(sanitizeString($_POST[ 'withdrawals' ]));
     
-    try {
-        if (empty($startDate) || empty($endDate)) {
-            $error = "Complete all required fields.";
-            throw new Exception();
-        }
-                       
-        $gatheredRequirements = true;
-        
-    } catch (Exception $ex) {
-        $msg = $ex->getMessage();
-        $message = "<span class='errorMessage'>$msg</span>";
+    if (empty($startDate) || empty($endDate)) {
+        $error = "Complete all required fields.";
     }
+
+    $includeKsCards = false;
+    $includeScrip = false;
+    $includeWithdrawals = false;
+    if ($kscards == "on" ) {
+        $includeKsCards = true;
+    }
+    if ($scrip == "on") {
+       $includeScrip = true; 
+    }
+    if ($withdrawals == "on") {
+        $includeWithdrawals = true;
+    }
+
+    $gatheredRequirements = true; 
 }
 
 if ($gatheredRequirements == false) {
@@ -73,6 +82,6 @@ else {
 //        "window.location.href = 'index.php'" .
 //      "});" .
 //    "</script>";
-    $report = new BoostersActivityReport($startDate, $endDate);
+    $report = new BoostersActivityReport($startDate, $endDate, $includeKsCards, $includeScrip, $includeWithdrawals);
     echo $report->getTable();   
 } 

@@ -59,6 +59,20 @@ class ActivityReport {
         text-align: center;
     }
 
+    .tg-title-name {
+        font-size: 14px;
+        font-weight: bold;
+        color: black;
+        text-align: left;     
+    }
+      
+    .tg-title-date {
+        font-size: 14px;
+        font-weight: bold;
+        color: black;
+        text-align: right;     
+    }
+                
     .tg-sthd {
         font-weight: bold;
         background-color: #efefef;
@@ -148,12 +162,32 @@ EOF;
         $this->table .= "<tr><th $style colspan='6'>$title</th></tr>";
     }
     
-    protected function writeDate()
-    {
-        $dates = $this->getStartDate() . " through " . $this->endDate;
-        $style = "class='tg-title'";
-        $this->table .= "<tr><th $style colspan='6'>$dates</th></tr>";
+    protected function writeNameDateTitle($name) {
+        $styleName = "class='tg-title-name'";
+        $styleDate = "class='tg-title-date'";
+        $dates = $this->startDate . " - " . $this->endDate;
+        
+        $this->table .= 
+        "<tr>" .
+            "<th $styleName colspan='3'>$name</th>" .
+            "<th $styleDate colspan='4'>$dates</th>" .
+        "</tr>";
+        
+        $style = "class='tg-title-date'";
     }
+    
+    protected function writeCategoryHeader($name)
+    {
+        $style = "class='tg-sthd'";
+        $this->table .= "<tr><td $style colspan='7'>$name</td></tr>";
+    }
+    
+//    protected function writeDate()
+//    {
+//        $dates = $this->getStartDate() . " through " . $this->endDate;
+//        $style = "class='tg-title'";
+//        $this->table .= "<tr><th $style colspan='6'>$dates</th></tr>";
+//    }
     
     protected function writeLine()
     {
@@ -397,7 +431,7 @@ EOF;
         return $result;
     }
     
-    private function format($number) {
+    protected function format($number) {
         // format mumbers with a '0' for padding
         // minimum 1 charcter before the decimal point,
         // and always two characters after. And treat it 

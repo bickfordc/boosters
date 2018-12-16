@@ -34,18 +34,14 @@ class StudentActivityReport extends ActivityReport {
         $this->withdrawalTotal = $this->getWithdrawalTotal();
     }
     
-    protected function writeCategoryHeader($name)
-    {
-        $style = "class='tg-sthd'";
-        $this->table .= "<tr><td $style colspan='7'>$name</td></tr>";
-    }
+ 
     
     protected function buildTable()
     {
         $this->table = "";
         $this->startTable();
-        $this->writeTitle($this->student->getFullName());
-        $this->writeDate();
+        $this->writeNameDateTitle($this->student->getFullName());
+        //$this->writeDate();
         
         $this->writeCategoryHeader("King Soopers");
         $this->writeCardHeaders();
