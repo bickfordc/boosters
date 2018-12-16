@@ -194,6 +194,12 @@ EOF;
         $this->table .= "<tr><td colspan='6'></td></tr>";
     }
     
+    protected function writeUnderline()
+    {
+        $style = "class='tg-undr'";
+        $this->table .= "<tr><td $style colspan='7'></td></tr>";  
+    }
+    
     protected function writeCardHeaders()
     {
         $styleRab = "class='tg-rab'";
@@ -440,7 +446,7 @@ EOF;
         return sprintf("%01.2f", $number);
     }
     
-    private function numberToMoney($number)
+    private  function numberToMoney($number)
     {
         // Not using PHP's money_format since not available on Windows.
         $money = "";
