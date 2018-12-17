@@ -185,6 +185,10 @@ class BoostersActivityReport extends ActivityReport {
         $this->writeCardsTotal("Total for Inactive Students", $grandTotal, false);
     }
     
+    protected function writeNoStudentKsReloads() {
+        
+    }
+    
     private function writeStudentCardsTotal($total, $studentGetsShare)
     {
         $styleLab = "class='tg-lab'";
