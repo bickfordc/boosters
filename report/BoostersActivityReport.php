@@ -66,7 +66,8 @@ class BoostersActivityReport extends ActivityReport {
             "SELECT ks.reload_date, ks.card, st.first, st.middle, st.last, ks.reload_amount, st.id " .
             "FROM ks_card_reloads AS ks INNER JOIN students AS st " . 
             "ON ks.student = st.id " .
-            "WHERE ks.student = $1 AND ks.reload_date>=$2 AND ks.reload_date<=$3",
+            "WHERE ks.student = $1 AND ks.reload_date>=$2 AND ks.reload_date<=$3" .
+            "ORDER BY ks.reload_date",
             array($studentId, $this->startDate, $this->endDate));
         
         if (!$result) {
