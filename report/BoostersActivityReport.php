@@ -42,6 +42,24 @@ class BoostersActivityReport extends ActivityReport {
         return pg_fetch_all($result);        
     }
     
+    private function getInvolvedInactiveStudents() {
+        // Get the Ids of active students that had a card reload, sorted by student name
+        $result = pg_query_params(
+            "SELECT DISTINCT sc.student, st.last, st.first, st.middle " .
+            "FROM ks_card_reloads AS ks " .
+            "INNER JOIN student_cards AS sc ON ks.card = sc.card " .
+            "INNER JOIN students AS st ON sc.student = st.id " .
+            "WHERE st.active = 'f' AND ks.reload_date >= $1 AND ks.reload_date <= $2" .
+            "ORDER BY st.last, st.first, st.middle",
+            array($this->startDate, $this->endDate));
+                        
+        if (!$result) {
+            throw new Exception(pg_last_error());
+        }
+        
+        return pg_fetch_all($result);        
+    }
+    
     private function getReloadsOfActiveStudent($studentId) {
         // Get all card reloads for the student in the date range
         $result = pg_query_params(
@@ -51,6 +69,23 @@ class BoostersActivityReport extends ActivityReport {
             "WHERE ks.student = $1 AND ks.reload_date>=$2 AND ks.reload_date<=$3",
             array($studentId, $this->startDate, $this->endDate));
         
+        if (!$result) {
+            throw new Exception(pg_last_error());
+        }
+        
+        return pg_fetch_all($result);
+    }
+    
+        private function getReloadsOfInactiveStudent($studentId) {
+        // Get all card reloads for the student in the date range
+        $result = pg_query_params(
+            "SELECT ks.reload_date, ks.card, st.first, st.middle, st.last, ks.reload_amount " . 
+            "FROM ks_card_reloads AS ks INNER JOIN student_cards AS sc ON ks.card = sc.card " .
+            "INNER JOIN students AS st ON sc.student = st.id  WHERE st.id = $1 " .
+            "AND ks.reload_date >= $2 AND ks.reload_date <= $3" .
+            "ORDER BY ks.reload_date",
+            array($studentId, $this->startDate, $this->endDate));
+                     
         if (!$result) {
             throw new Exception(pg_last_error());
         }
@@ -102,7 +137,7 @@ class BoostersActivityReport extends ActivityReport {
         "</tr>";
     }
     
-    protected function writeStudentKsReloads() {
+    protected function writeActiveStudentKsReloads() {
        
         $involvedActiveStudents = $this->getInvolvedActiveStudents();
         $grandTotal = 0;
@@ -119,14 +154,38 @@ class BoostersActivityReport extends ActivityReport {
                         $reload['reload_amount']);
                 $studentTotal += $reload['reload_amount'];
             }
-            $this->writeStudentCardsTotal($studentTotal);
+            $this->writeStudentCardsTotal($studentTotal, true);
             $grandTotal += $studentTotal;
         }
         $this->writeUnderline();
-        $this->writeCardsTotal("Total for Active Students", $grandTotal);
+        $this->writeCardsTotal("Total for Active Students", $grandTotal, true);
     }
     
-    private function writeStudentCardsTotal($total)
+    protected function writeInactiveStudentKsReloads() {
+       
+        $involvedInactiveStudents = $this->getInvolvedInactiveStudents();
+        $grandTotal = 0;
+        foreach ($involvedInactiveStudents as $student) {
+            $this->writeStudentCardHeaders();
+            $studentTotal = 0;
+            $id = $student['student'];
+            $reloads = $this->getReloadsOfInactiveStudent($id);
+            foreach ($reloads as $reload) {
+                $this->writeCardReload(
+                        $reload['reload_date'],
+                        $reload['card'],
+                        $reload['first'] . " " . $reload['middle'] . " " .  $reload['last'] ,   
+                        $reload['reload_amount']);
+                $studentTotal += $reload['reload_amount'];
+            }
+            $this->writeStudentCardsTotal($studentTotal, false);
+            $grandTotal += $studentTotal;
+        }
+        $this->writeUnderline();
+        $this->writeCardsTotal("Total for Inactive Students", $grandTotal, false);
+    }
+    
+    private function writeStudentCardsTotal($total, $studentGetsShare)
     {
         $styleLab = "class='tg-lab'";
         $styleRab = "class='tg-rab'";
@@ -137,9 +196,14 @@ class BoostersActivityReport extends ActivityReport {
         $styleR3sr = "class='tg-r3sr'";
                
         $rebate = $total * RebatePercentages::$KS_CARD_RELOAD;
-        $boostersShare = $rebate * RebatePercentages::$BOOSTERS_SHARE;
-        $studentShare = $rebate * RebatePercentages::$STUDENT_SHARE;
-        
+        if ($studentGetsShare) {
+            $boostersShare = $rebate * RebatePercentages::$BOOSTERS_SHARE;
+            $studentShare = $rebate * RebatePercentages::$STUDENT_SHARE;
+        }
+        else {
+            $boostersShare = $rebate;
+            $studentShare = 0;
+        }
         $totalAmt = $this->format($total);
         $rebateAmt = $this->format($rebate);
         $boostersShareAmt = $this->format($boostersShare);
@@ -165,7 +229,7 @@ class BoostersActivityReport extends ActivityReport {
         $this->writeLine();
     }
     
-    protected function writeCardsTotal($description, $total)
+    protected function writeCardsTotal($description, $total, $studentGetsShare)
     {
         $styleLab = "class='tg-lab'";
         $styleRab = "class='tg-rab'";
@@ -176,8 +240,14 @@ class BoostersActivityReport extends ActivityReport {
         $styleR3sr = "class='tg-r3sr'";
                
         $rebate = $total * RebatePercentages::$KS_CARD_RELOAD;
-        $boostersShare = $rebate * RebatePercentages::$BOOSTERS_SHARE;
-        $studentShare = $rebate * RebatePercentages::$STUDENT_SHARE;
+        if ($studentGetsShare) {
+            $boostersShare = $rebate * RebatePercentages::$BOOSTERS_SHARE;
+            $studentShare = $rebate * RebatePercentages::$STUDENT_SHARE;
+        }
+        else {
+            $boostersShare = $rebate;
+            $studentShare = 0;
+        }
         
         $totalAmt = $this->format($total);
         $rebateAmt = $this->format($rebate);
@@ -231,9 +301,11 @@ class BoostersActivityReport extends ActivityReport {
         $this->writeNameDateTitle("Boosters Activity");
         if ($this->includeKsCards) {
             $this->writeCategoryHeader("King Soopers reloads with active student");
-            //$this->writeStudentCardHeaders();
-            $this->writeStudentKsReloads();
+            $this->writeActiveStudentKsReloads();
             $this->writeCategoryHeader("King Soopers reloads with inactive student");
+            $this->writeInactiveStudentKsReloads();
+            $this->writeCategoryHeader("King Soopers reloads with no student");
+            $this->writeNoStudentKsReloads();
             
         }
     }

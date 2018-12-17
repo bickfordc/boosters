@@ -20,7 +20,7 @@ $(function () {
             { name: "middle", width: 60 },
             { name: "last", width: 60 }
         ],
-        //editurl: "editCardData.php",
+        editurl: "editCardData.php",
         pager: "#pager",
         rowNum: 15,
         // rowList: [10, 20, 30],
