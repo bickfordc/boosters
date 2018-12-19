@@ -78,6 +78,12 @@ class ActivityReport {
         background-color: #efefef;
     }
 
+    .tg-sthdra {
+        font-weight: bold;
+        background-color: #efefef;
+        text-align: right;
+    }
+                
     .tg-undr {
         border-bottom: 1px solid black
     }
@@ -176,19 +182,21 @@ EOF;
         $style = "class='tg-title-date'";
     }
     
-    protected function writeCategoryHeader($name)
+    protected function writeCategoryHeader($name, $numRecords=null)
     {
         $style = "class='tg-sthd'";
-        $this->table .= "<tr><td $style colspan='7'>$name</td></tr>";
+        $styleRa = "class='tg-sthdra'";
+        if ($numRecords) {
+            $this->table .= "<tr>" .
+                              "<td $style colspan='6'>$name</td>" .
+                              "<td $styleRa>$numRecords records</td>" .
+                            "</tr>";
+        }
+        else {
+            $this->table .= "<tr><td $style colspan='7'>$name</td></tr>";
+        }
     }
-    
-//    protected function writeDate()
-//    {
-//        $dates = $this->getStartDate() . " through " . $this->endDate;
-//        $style = "class='tg-title'";
-//        $this->table .= "<tr><th $style colspan='6'>$dates</th></tr>";
-//    }
-    
+        
     protected function writeLine()
     {
         $this->table .= "<tr><td colspan='6'></td></tr>";
@@ -209,6 +217,23 @@ EOF;
         "<tr>" .
             "<td $styleLab>Date</td>" .
             "<td $styleLab>Card</td>" .
+            "<td $styleRab>Amount</td>" .
+            "<td $styleRab>Rebate</td>" .
+            "<td $styleRab>Boosters Share</td>" .
+            "<td $styleRab>Student Share</td>" .
+        "</tr>";
+    }
+    
+    protected function writeSubTotalHeaders()
+    {
+        $styleRab = "class='tg-rab'";
+        $styleLab = "class='tg-lab'";
+        
+        $this->table .=         
+        "<tr>" .
+            "<td></td>" .
+            "<td></td>" .
+            "<td></td>" .
             "<td $styleRab>Amount</td>" .
             "<td $styleRab>Rebate</td>" .
             "<td $styleRab>Boosters Share</td>" .

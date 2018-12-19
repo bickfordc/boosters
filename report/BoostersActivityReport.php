@@ -93,24 +93,7 @@ class BoostersActivityReport extends ActivityReport {
         
         return pg_fetch_all($result);
     }
-    
-//    private function getActiveStudentCardReloads() {
-//        // Get all card reloads in the date range that had an associated active student
-//        $result = pg_query_params(
-//            "SELECT ks.reload_date, ks.card, st.first, st.middle, st.last, ks.reload_amount, st.id " .
-//            "FROM ks_card_reloads AS ks INNER JOIN students AS st " . 
-//            "ON ks.student = st.id " .
-//            "WHERE ks.reload_date>=$1 AND ks.reload_date<=$2 " .
-//            "ORDER BY st.last, st.first, st.middle, ks.reload_date", 
-//            array($this->startDate, $this->endDate));
-//        
-//        if (!$result) {
-//            throw new Exception(pg_last_error());
-//        }
-//        
-//        return pg_fetch_all($result);
-//    }
-    
+        
     private function getStudentName($studentId) {
         
         $studentName = $this->studentIdMap[$studentId];
@@ -135,6 +118,40 @@ class BoostersActivityReport extends ActivityReport {
             "<td $styleRab>Rebate</td>" .
             "<td $styleRab>Boosters Share</td>" .
             "<td $styleRab>Student Share</td>" .
+        "</tr>";
+    }
+    
+    protected function writeUnknownCardHeaders()
+    {
+        $styleRab = "class='tg-rab'";
+        $styleLab = "class='tg-lab'";
+        
+        $this->table .=         
+        "<tr>" .
+            "<td $styleLab>Date</td>" .
+            "<td $styleLab>Card</td>" .
+            "<td></td>" .
+            "<td $styleRab>Amount</td>" .  
+            "<td></td>" .
+            "<td $styleRab>Original Invoice</td>" .
+            "<td $styleRab>Original Invoice Date</td>" . 
+        "</tr>";
+    }
+    
+    private function writeUnknownCardTotalHeaders()
+    {
+        $styleRab = "class='tg-rab'";
+        $styleLab = "class='tg-lab'";
+        
+        $this->table .=         
+        "<tr>" .
+            "<td $styleLab>Date</td>" .
+            "<td $styleLab>Card</td>" .
+            "<td $styleRab>Amount</td>" .  
+            "<td></td>" .
+            "<td $styleLab>Original Invoice</td>" .
+            "<td $styleLab>Original Invoice Date</td>" .
+            "<td></td>" .
         "</tr>";
     }
     
@@ -190,6 +207,61 @@ class BoostersActivityReport extends ActivityReport {
         
     }
     
+    private function getUnknownCardKsReloads(&$count, &$sum) {
+        // select ks.reload_date, ks.card, ks.reload_amount, ks.original_invoice_number, ks.original_invoice_date from ks_card_reloads as ks left join cards as c on ks.card = c.id where c.id is null order by ks.card, ks.reload_date
+        $result = pg_query_params(
+            "SELECT ks.reload_date, ks.card, ks.reload_amount, " .
+            "ks.original_invoice_number, ks.original_invoice_date " .
+            "FROM ks_card_reloads as ks LEFT JOIN cards as c " .
+            "ON ks.card = c.id where c.id IS NULL " .
+            "AND ks.reload_date >= $1 AND ks.reload_date <= $2 " .
+            "ORDER BY ks.card, ks.reload_date",
+            array($this->startDate, $this->endDate));
+ 
+        if (!$result) {
+            throw new Exception(pg_last_error());
+        }
+        
+        $count = pg_num_rows($result);
+        
+        $sumResult = pg_query_params(
+            "SELECT SUM(ks.reload_amount) FROM ks_card_reloads as ks " .
+            "LEFT JOIN cards as c " .
+            "ON ks.card = c.id where c.id IS NULL " .
+            "AND ks.reload_date >= $1 AND ks.reload_date <= $2",
+            array($this->startDate, $this->endDate));
+ 
+        if (!$sumResult) {
+            throw new Exception(pg_last_error());
+        }
+        
+        $sum = pg_fetch_result($sumResult, 0, 0);
+        
+        return pg_fetch_all($result);
+    }
+    
+    protected function writeUnknownCardKsReloads() {
+        $count = 0;
+        $sum = 0;
+        $unknownCardReloads = $this->getUnknownCardKsReloads($count, $sum);
+        $this->writeCategoryHeader("King Soopers reloads on unrecorded cards", $count);
+        $this->writeUnknownCardHeaders();
+        
+        $total = 0;
+        foreach ($unknownCardReloads as $reload) {
+            $this->writeUnknownCardReload(
+                $reload['reload_date'],
+                $reload['card'],
+                $reload['reload_amount'],
+                $reload['original_invoice_number'],
+                $reload['original_invoice_date']);
+            $total += $reload['reload_amount'];
+        }
+        $this->writeUnderline();
+        $this->writeSubTotalHeaders();
+        $this->writeCardsTotal("Unrecorded cards total", $total, false);
+    }
+    
     private function writeStudentCardsTotal($total, $studentGetsShare)
     {
         $styleLab = "class='tg-lab'";
@@ -202,8 +274,9 @@ class BoostersActivityReport extends ActivityReport {
                
         $rebate = $total * RebatePercentages::$KS_CARD_RELOAD;
         if ($studentGetsShare) {
-            $boostersShare = $rebate * RebatePercentages::$BOOSTERS_SHARE;
             $studentShare = $rebate * RebatePercentages::$STUDENT_SHARE;
+            $boostersShare = $rebate - $studentShare;
+            
         }
         else {
             $boostersShare = $rebate;
@@ -246,8 +319,9 @@ class BoostersActivityReport extends ActivityReport {
                
         $rebate = $total * RebatePercentages::$KS_CARD_RELOAD;
         if ($studentGetsShare) {
-            $boostersShare = $rebate * RebatePercentages::$BOOSTERS_SHARE;
             $studentShare = $rebate * RebatePercentages::$STUDENT_SHARE;
+            $boostersShare = $rebate - $studentShare;
+            
         }
         else {
             $boostersShare = $rebate;
@@ -283,7 +357,7 @@ class BoostersActivityReport extends ActivityReport {
     {
         $styleRa = "class='tg-ra'";
         
-        $rebate = $amount * RebatePercentages::$KS_CARD_RELOAD * RebatePercentages::$STUDENT_SHARE;
+        $rebate = $amount * RebatePercentages::$KS_CARD_RELOAD;
         $amountStr = $this->format($amount);
         $rebateStr = $this->format($rebate);
         
@@ -299,6 +373,26 @@ class BoostersActivityReport extends ActivityReport {
         "</tr>";
     }
     
+    private function writeUnknownCardReload($date, $card, $amount, $invoice, $invoiceDate)
+    {
+        $styleRa = "class='tg-ra'";
+        
+        //$rebate = $amount * RebatePercentages::$KS_CARD_RELOAD;
+        $amountStr = $this->format($amount);
+        //$rebateStr = $this->format($rebate);
+        
+        $this->table .=
+        "<tr>" .
+            "<td>$date</td>" .
+            "<td>$card</td>" .
+            "<td></td>" .
+            "<td $styleRa>$amountStr</td>" .
+             "<td></td>" .
+            "<td $styleRa>$invoice</td>" . 
+            "<td $styleRa>$invoiceDate</td>" .
+        "</tr>";
+    }
+    
     protected function buildTable()
     {
         $this->table = "";
@@ -307,10 +401,13 @@ class BoostersActivityReport extends ActivityReport {
         if ($this->includeKsCards) {
             $this->writeCategoryHeader("King Soopers reloads with active student");
             $this->writeActiveStudentKsReloads();
-            $this->writeCategoryHeader("King Soopers reloads with inactive student");
-            $this->writeInactiveStudentKsReloads();
-            $this->writeCategoryHeader("King Soopers reloads with no student");
-            $this->writeNoStudentKsReloads();
+            //$this->writeCategoryHeader("King Soopers reloads with inactive student");
+            //$this->writeInactiveStudentKsReloads();
+            //$this->writeCategoryHeader("King Soopers reloads with no student");
+            //$this->writeNoStudentKsReloads();
+            
+            $this->writeUnknownCardKsReloads();
+            
             
         }
     }
