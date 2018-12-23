@@ -105,6 +105,17 @@ EOF;
     postgres_query($sql);
         
     $sql =<<<EOF
+            
+    DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'allocation_type') THEN
+            CREATE TYPE allocation_type AS ENUM
+            (
+                'unrecorded', 'unassigned', 'activeStudent', 'inactiveStudent', 'donor'
+            );
+        END IF;
+    END$$;
+            
     CREATE TABLE IF NOT EXISTS scrip_orders
     (order_id varchar(10) PRIMARY KEY,
      order_count smallint,
@@ -113,7 +124,9 @@ EOF;
      rebate numeric(10,2),
      scrip_first varchar(32),
      scrip_last varchar(32),
+     donor varchar(40),
      student integer REFERENCES students (id),
+     allocation allocation_type,
      FOREIGN KEY (scrip_first, scrip_last) REFERENCES scrip_families(family_first, family_last)
     );
 EOF;
@@ -121,17 +134,7 @@ EOF;
     postgres_query($sql);
     
     $sql =<<<EOF
-            
-    DO $$
-    BEGIN
-        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'allocation_type') THEN
-            CREATE TYPE allocation_type AS ENUM
-            (
-                'unrecordedCard', 'unassigned', 'activeStudent', 'inactiveStudent', 'cardHolder'
-            );
-        END IF;
-    END$$;
-            
+                        
     CREATE TABLE IF NOT EXISTS ks_card_reloads
       (card varchar(30),
        reload_date date,
