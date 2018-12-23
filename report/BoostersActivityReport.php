@@ -84,7 +84,7 @@ class BoostersActivityReport extends ActivityReport {
         
         $result = pg_query_params(
             "SELECT reload_date, card, card_holder, reload_amount " .
-            "FROM ks_card_reloads WHERE allocation = 'cardHolder' " .
+            "FROM ks_card_reloads WHERE allocation = 'donor' " .
             "AND reload_date>=$1 AND reload_date<=$2" .
             "ORDER BY card_holder, reload_date",
             array($this->startDate, $this->endDate));
@@ -97,7 +97,7 @@ class BoostersActivityReport extends ActivityReport {
         
         $sumResult = pg_query_params(
             "SELECT SUM(reload_amount) FROM ks_card_reloads " . 
-            "WHERE allocation = 'cardHolder' AND reload_date>=$1 AND reload_date<=$2",
+            "WHERE allocation = 'donor' AND reload_date>=$1 AND reload_date<=$2",
             array($this->startDate, $this->endDate));
         
         if (!$sumResult) {

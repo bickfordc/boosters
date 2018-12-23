@@ -210,12 +210,12 @@ class KsReload {
                 }
             }
             else {
-                $this->allocation = "cardHolder";
+                $this->allocation = "donor";
                 $this->cardHolder = $this->getCardHolder();
             }
         }
         catch (Exception $e) {
-            $this->allocation = "unrecordedCard";
+            $this->allocation = "unrecorded";
         } 
     }
     
