@@ -12,6 +12,8 @@ class KsReload {
     private $originalInvoiceDate;
     private $amount;
     private $student;
+    private $allocation;
+    private $cardHolder = null;
     
     function __construct($card, $transactionDate, $originalInvoiceNumber, $originalInvoiceDate, $amount)
     {
@@ -25,6 +27,7 @@ class KsReload {
         if ($studentId){
             $this->student = new Student($studentId);
         }
+        $this->determineAllocation();
     }
     
     public function getCard() {
@@ -73,36 +76,44 @@ class KsReload {
         
     public function insertToDb() {
         
-        if ($this->student && $this->student->isActive()) {
-            $result = pg_query_params("INSERT INTO ks_card_reloads (card, reload_date, "
-                . "reload_amount, original_invoice_number, original_invoice_date, student) VALUES ($1, $2, $3, $4, $5, $6)", 
+        $studentId = null;
+        if ($this->student) {
+            $studentId = $this->student->getId();
+        }
+        $result = pg_query_params("INSERT INTO ks_card_reloads " .
+            "(card, reload_date, reload_amount, original_invoice_number, " .
+            "original_invoice_date, card_holder, student, allocation) " .
+            "VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", 
             array(
             $this->card,
             $this->transactionDate,
             $this->amount,
             $this->originalInvoiceNumber,
             $this->originalInvoiceDate,
-            $this->student->getId()
+            $this->cardHolder,
+            $studentId,
+            $this->allocation
             ));
-            if (!$result) {
+        if (!$result) {
                 throw new Exception(pg_last_error());
             }
         }
-        else {
-            $result = pg_query_params("INSERT INTO ks_card_reloads (card, reload_date, "
-                    . "reload_amount, original_invoice_number, original_invoice_date) VALUES ($1, $2, $3, $4, $5)", 
-                    array(
-                    $this->card,
-                    $this->transactionDate,
-                    $this->amount,
-                    $this->originalInvoiceNumber,
-                    $this->originalInvoiceDate
-                    ));
-            if (!$result) {
-                throw new Exception(pg_last_error());
-            }
-        }
-    }
+//        else {
+//            $result = pg_query_params("INSERT INTO ks_card_reloads (card, reload_date, "
+//                    . "reload_amount, original_invoice_number, original_invoice_date, allocation) VALUES ($1, $2, $3, $4, $5, $6)", 
+//                    array(
+//                    $this->card,
+//                    $this->transactionDate,
+//                    $this->amount,
+//                    $this->originalInvoiceNumber,
+//                    $this->originalInvoiceDate,
+//                    $this->allocation
+//                    ));
+//            if (!$result) {
+//                throw new Exception(pg_last_error());
+//            }
+//        }
+//   }
     
     /**
      * Get the ID of the student that the card is assigned to.
@@ -162,4 +173,72 @@ class KsReload {
         
         return $amount;
     } 
+    
+    // find the matching card in the cards table
+    // if it exists, is it assigned?
+    private function isCardAssigned($card) {
+        $result = pg_query_params(
+                "SELECT sold from cards WHERE id = $1",
+                array($card));
+        
+        if (pg_num_rows($result) == 0) {
+            throw new Exception("Card $card is not recorded");
+        }
+        
+        $assigned = pg_fetch_result($result, 0, 0);
+        if ($assigned == 't') {
+            return true;
+        } 
+        else {
+            return false;
+        }
+    }
+    
+    private function determineAllocation() {
+        
+        try {
+            $assigned = $this->isCardAssigned($this->card);
+            if (!$assigned) {
+                $this->allocation = "unassigned";
+            }
+            elseif ($this->student) {
+                if ($this->student->isActive()) {
+                    $this->allocation = "activeStudent";
+                }
+                else {
+                    $this->allocation = "inactiveStudent";
+                }
+            }
+            else {
+                $this->allocation = "cardHolder";
+                $this->cardHolder = $this->getCardHolder();
+            }
+        }
+        catch (Exception $e) {
+            $this->allocation = "unrecordedCard";
+        } 
+    }
+    
+    private function getCardHolder() {
+        
+        $result = pg_query_params(
+            "SELECT card_holder from cards WHERE id = $1",
+            array($this->card));
+
+        if (!$result) {
+            throw new Exception(pg_last_error());
+        }
+        
+        if (pg_num_rows($result == 0)) {
+            throw new Exception("Card $this->card is not recorded");
+        }
+        
+        $cardHolder = pg_fetch_result($result, 0, 0);
+        if (!$cardHolder) {
+            $cardHolder = "";
+        }
+        
+        return $cardHolder;
+    }
+    
 }

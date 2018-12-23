@@ -121,13 +121,26 @@ EOF;
     postgres_query($sql);
     
     $sql =<<<EOF
+            
+    DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'allocation_type') THEN
+            CREATE TYPE allocation_type AS ENUM
+            (
+                'unrecordedCard', 'unassigned', 'activeStudent', 'inactiveStudent', 'cardHolder'
+            );
+        END IF;
+    END$$;
+            
     CREATE TABLE IF NOT EXISTS ks_card_reloads
       (card varchar(30),
        reload_date date,
        reload_amount numeric(10, 2),
        original_invoice_number varchar(15),
        original_invoice_date date,
+       card_holder varchar(40),
        student integer REFERENCES students (id),
+       allocation allocation_type,
        PRIMARY KEY (card, reload_date, reload_amount)
       );      
 EOF;

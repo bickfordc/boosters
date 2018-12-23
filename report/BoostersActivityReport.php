@@ -8,9 +8,6 @@ class BoostersActivityReport extends ActivityReport {
     private $includeKsCards;
     private $includeScrip;
     private $includeWithdrawals;
-    //private $activeStudentCardReloads;
-    //private $studentIdMap = array();
-    
     
     function __construct($startDate, $endDate, $includeKsCards, $includeScrip, $includeWithdrawals) {
 
@@ -19,10 +16,6 @@ class BoostersActivityReport extends ActivityReport {
         $this->includeKsCards = $includeKsCards;
         $this->includeScrip = $includeScrip;
         $this->includeWithdrawals = $includeWithdrawals;
-        
-//        if ($this->includeKsCards) {
-//            $this->activeStudentCardReloads = $this->getActiveStudentCardReloads();
-//        }
     }
                    
     private function getInvolvedActiveStudents() {
@@ -83,7 +76,7 @@ class BoostersActivityReport extends ActivityReport {
             "SELECT ks.reload_date, ks.card, st.first, st.middle, st.last, ks.reload_amount, st.id " .
             "FROM ks_card_reloads AS ks INNER JOIN students AS st " . 
             "ON ks.student = st.id " .
-            "WHERE ks.reload_date>=$1 AND ks.reload_date<=$2" .
+            "WHERE allocation = 'activeStudent' AND ks.reload_date>=$1 AND ks.reload_date<=$2" .
             "ORDER BY st.last, st.first, st.middle, ks.reload_date",
             array($this->startDate, $this->endDate));
              
@@ -97,7 +90,7 @@ class BoostersActivityReport extends ActivityReport {
             "SELECT SUM(ks.reload_amount) FROM ks_card_reloads AS ks " .
             "INNER JOIN students AS st " . 
             "ON ks.student = st.id " .
-            "WHERE ks.reload_date>=$1 AND ks.reload_date<=$2",
+            "WHERE allocation = 'activeStudent' AND ks.reload_date>=$1 AND ks.reload_date<=$2",
             array($this->startDate, $this->endDate));
         
         if (!$sumResult) {
@@ -126,6 +119,65 @@ class BoostersActivityReport extends ActivityReport {
         return pg_fetch_all($result);
     }
         
+    private function getReloadsOfInactiveStudents(&$count, &$sum) {
+        
+        $result = pg_query_params(
+            "SELECT ks.reload_date, ks.card, st.first, st.middle, st.last, ks.reload_amount, st.id " .
+            "FROM ks_card_reloads AS ks INNER JOIN students AS st " . 
+            "ON ks.student = st.id " .
+            "WHERE ks.allocation = 'inactiveStudent' AND ks.reload_date>=$1 AND ks.reload_date<=$2" .
+            "ORDER BY st.last, st.first, st.middle, ks.reload_date",
+            array($this->startDate, $this->endDate));
+             
+        if (!$result) {
+            throw new Exception(pg_last_error());
+        }
+        
+        $count = pg_num_rows($result);
+        
+        $sumResult = pg_query_params(
+            "SELECT SUM(reload_amount) FROM ks_card_reloads " . 
+            "WHERE allocation = 'inactiveStudent' AND reload_date>=$1 AND reload_date<=$2",
+            array($this->startDate, $this->endDate));
+        
+        if (!$sumResult) {
+            throw new Exception(pg_last_error());
+        }
+        
+        $sum = pg_fetch_result($sumResult, 0, 0);
+        
+        return pg_fetch_all($result);
+    }
+    
+        private function getReloadsOfCardHolders(&$count, &$sum) {
+        
+        $result = pg_query_params(
+            "SELECT reload_date, card, card_holder, reload_amount " .
+            "FROM ks_card_reloads WHERE allocation = 'cardHolder' " .
+            "AND reload_date>=$1 AND reload_date<=$2" .
+            "ORDER BY card_holder, reload_date",
+            array($this->startDate, $this->endDate));
+             
+        if (!$result) {
+            throw new Exception(pg_last_error());
+        }
+        
+        $count = pg_num_rows($result);
+        
+        $sumResult = pg_query_params(
+            "SELECT SUM(reload_amount) FROM ks_card_reloads " . 
+            "WHERE allocation = 'cardHolder' AND reload_date>=$1 AND reload_date<=$2",
+            array($this->startDate, $this->endDate));
+        
+        if (!$sumResult) {
+            throw new Exception(pg_last_error());
+        }
+        
+        $sum = pg_fetch_result($sumResult, 0, 0);
+        
+        return pg_fetch_all($result);
+    }
+    
     private function getStudentName($studentId) {
         
         $studentName = $this->studentIdMap[$studentId];
@@ -136,7 +188,7 @@ class BoostersActivityReport extends ActivityReport {
         return $studentName;
     }
     
-    protected function writeStudentCardHeaders()
+    private function writeStudentCardHeaders()
     {
         $styleRab = "class='tg-rab'";
         $styleLab = "class='tg-lab'";
@@ -147,9 +199,9 @@ class BoostersActivityReport extends ActivityReport {
             "<td $styleLab>Card</td>" .
             "<td $styleLab>Student</td>" .    
             "<td $styleRab>Amount</td>" .
-            "<td $styleRab>Rebate</td>" .
-            "<td $styleRab>Boosters Share</td>" .
-            "<td $styleRab>Student Share</td>" .
+            "<td></td>" .
+            "<td></td>" .
+            "<td></td>" .
         "</tr>";
     }
     
@@ -198,6 +250,7 @@ class BoostersActivityReport extends ActivityReport {
             $reloads = $this->getReloadsOfActiveStudents($count, $sum);
             $grandTotal = $sum;
             $this->writeCategoryHeader("King Soopers reloads with active student", $count);
+            $this->writeStudentCardHeaders();
             foreach ($reloads as $reload) {
                 $this->writeCardReload(
                     $reload['reload_date'],
@@ -227,35 +280,73 @@ class BoostersActivityReport extends ActivityReport {
         }
         $this->writeUnderline();
         $this->writeSubTotalHeaders();
-        $this->writeCardsTotal("Total for Active Students", $grandTotal, true);
+        $this->writeCardsTotal("Total for active students", $grandTotal, true);
     }
        
     protected function writeInactiveStudentKsReloads() {
-       
-        $involvedInactiveStudents = $this->getInvolvedInactiveStudents();
-        $grandTotal = 0;
-        foreach ($involvedInactiveStudents as $student) {
-            $this->writeStudentCardHeaders();
-            $studentTotal = 0;
-            $id = $student['student'];
-            $reloads = $this->getReloadsOfInactiveStudent($id);
-            foreach ($reloads as $reload) {
-                $this->writeCardReload(
-                        $reload['reload_date'],
-                        $reload['card'],
-                        $reload['first'] . " " . $reload['middle'] . " " .  $reload['last'] ,   
-                        $reload['reload_amount']);
-                $studentTotal += $reload['reload_amount'];
-            }
-            $this->writeStudentCardsTotal($studentTotal, false);
-            $grandTotal += $studentTotal;
+        $count = 0;
+        $sum = 0;
+        $reloads = $this->getReloadsOfInactiveStudents($count, $sum);
+        $this->writeCategoryHeader("King Soopers reloads with inactive student", $count); 
+        $this->writeStudentCardHeaders();
+        foreach ($reloads as $reload) {
+            $this->writeCardReload(
+                    $reload['reload_date'],
+                    $reload['card'],
+                    $reload['first'] . " " . $reload['middle'] . " " .  $reload['last'] ,   
+                    $reload['reload_amount']);
         }
         $this->writeUnderline();
-        $this->writeCardsTotal("Total for Inactive Students", $grandTotal, false);
+        $this->writeSubTotalHeaders();
+        $this->writeCardsTotal("Total for inactive students", $sum, false);
     }
     
-    protected function writeNoStudentKsReloads() {
+    protected function writeCardHolderKsReloads() {
+        $count = 0;
+        $sum = 0;
+        $reloads = $this->getReloadsOfCardHolders($count, $sum);
+        $this->writeCategoryHeader("King Soopers reloads with card holder", $count); 
+        $this->writeStudentCardHeaders();
+        foreach ($reloads as $reload) {
+            $this->writeCardReload(
+                    $reload['reload_date'],
+                    $reload['card'],
+                    $reload['card_holder'],   
+                    $reload['reload_amount']);
+        }
+        $this->writeUnderline();
+        $this->writeSubTotalHeaders();
+        $this->writeCardsTotal("Total for card holders", $sum, false);
+    }
+    
+    protected function getUnassignedCardKsReloads(&$count, &$sum) {
+        $result = pg_query_params(
+            "SELECT reload_date, card, reload_amount, " .
+            "original_invoice_number, original_invoice_date " .
+            "FROM ks_card_reloads WHERE allocation = 'unassigned' " .
+            "AND reload_date >= $1 AND reload_date <= $2 " .
+            "ORDER BY reload_date",
+            array($this->startDate, $this->endDate));
         
+        if (!$result) {
+            throw new Exception(pg_last_error());
+        }
+        
+        $count = pg_num_rows($result);
+        
+        $sumResult = pg_query_params(
+            "SELECT SUM(reload_amount) " .
+            "FROM ks_card_reloads WHERE allocation = 'unassigned' " .
+            "AND reload_date >= $1 AND reload_date <= $2",
+            array($this->startDate, $this->endDate));    
+
+        if (!$sumResult) {
+            throw new Exception(pg_last_error());
+        }
+        
+        $sum = pg_fetch_result($sumResult, 0, 0);
+        
+        return pg_fetch_all($result);
     }
     
     private function getUnknownCardKsReloads(&$count, &$sum) {
@@ -310,6 +401,28 @@ class BoostersActivityReport extends ActivityReport {
         $this->writeUnderline();
         $this->writeSubTotalHeaders();
         $this->writeCardsTotal("Unrecorded cards total", $total, false);
+    }
+    
+    private function writeUnassignedCardKsReloads() {
+        $count = 0;
+        $sum = 0;
+        $unassignedCardReloads = $this->getUnassignedCardKsReloads($count, $sum);
+        $this->writeCategoryHeader("King Soopers reloads on unassigned cards", $count);
+        $this->writeUnknownCardHeaders();
+        
+        $total = 0;
+        foreach ($unassignedCardReloads as $reload) {
+            $this->writeUnknownCardReload(
+                $reload['reload_date'],
+                $reload['card'],
+                $reload['reload_amount'],
+                $reload['original_invoice_number'],
+                $reload['original_invoice_date']);
+            $total += $reload['reload_amount'];
+        }
+        $this->writeUnderline();
+        $this->writeSubTotalHeaders();
+        $this->writeCardsTotal("Unassigned cards total", $total, false);
     }
     
     private function writeStudentCardsTotal($total, $studentGetsShare)
@@ -447,16 +560,11 @@ class BoostersActivityReport extends ActivityReport {
         $this->startTable();
         $this->writeNameDateTitle("Boosters Activity");
         if ($this->includeKsCards) {
-            
             $this->writeActiveStudentKsReloads();
-            //$this->writeCategoryHeader("King Soopers reloads with inactive student");
-            //$this->writeInactiveStudentKsReloads();
-            //$this->writeCategoryHeader("King Soopers reloads with no student");
-            //$this->writeNoStudentKsReloads();
-            
+            $this->writeInactiveStudentKsReloads();
+            $this->writeCardHolderKsReloads();
+            $this->writeUnassignedCardKsReloads();
             $this->writeUnknownCardKsReloads();
-            
-            
         }
     }
 }
