@@ -171,6 +171,92 @@ class BoostersActivityReport extends ActivityReport {
         return pg_fetch_all($result);
     }
          
+    private function getScripOrders($allocation, &$count, &$orderSum, &$rebateSum) {
+        $result = pg_query_params(
+            "SELECT so.order_date, so.scrip_first, so.scrip_last, " .
+            "st.first, st.middle, st.last, so.order_amount, so.rebate " .
+            "FROM scrip_orders AS so INNER JOIN students AS st " .
+            "ON so.student = st.id WHERE so.allocation = $1 " .
+            "AND so.order_date >= $2 AND so.order_date <= $3 " .
+            "ORDER BY st.last, st.first, st.middle, so.order_date",
+            array($allocation, $this->startDate, $this->endDate));
+ 
+        if (!$result) {
+            throw new Exception(pg_last_error());
+        }
+        
+        $count = pg_num_rows($result);
+        
+        $orderSumResult = pg_query_params(
+            "SELECT SUM(so.order_amount) " .
+            "FROM scrip_orders AS so INNER JOIN students AS st " .
+            "ON so.student = st.id WHERE so.allocation = $1 " .
+            "AND so.order_date >= $2 AND so.order_date <= $3 ",
+            array($allocation, $this->startDate, $this->endDate));
+ 
+        if (!$orderSumResult) {
+            throw new Exception(pg_last_error());
+        }
+        
+        $orderSum = pg_fetch_result($orderSumResult, 0, 0);
+        
+        $rebateSumResult = pg_query_params(
+            "SELECT SUM(so.rebate) " .
+            "FROM scrip_orders AS so INNER JOIN students AS st " .
+            "ON so.student = st.id WHERE so.allocation = $1 " .
+            "AND so.order_date >= $2 AND so.order_date <= $3 ",
+            array($allocation, $this->startDate, $this->endDate));
+ 
+        if (!$rebateSumResult) {
+            throw new Exception(pg_last_error());
+        }
+        
+        $rebateSum = pg_fetch_result($rebateSumResult, 0, 0);
+        
+        return pg_fetch_all($result);
+    }
+    
+    private function getUnassignedScripOrders($allocation, &$count, &$orderSum, &$rebateSum) {
+        $result = pg_query_params(
+            "SELECT order_date, scrip_first, scrip_last, order_amount, rebate " .
+            "FROM scrip_orders WHERE allocation = $1 " .
+            "AND order_date >= $2 AND order_date <= $3 " .
+            "ORDER BY scrip_last, scrip_first, order_date",
+            array($allocation, $this->startDate, $this->endDate));
+ 
+        if (!$result) {
+            throw new Exception(pg_last_error());
+        }
+        
+        $count = pg_num_rows($result);
+        
+        $orderSumResult = pg_query_params(
+            "SELECT SUM(order_amount) " .
+            "FROM scrip_orders WHERE allocation = $1 " .
+            "AND order_date >= $2 AND order_date <= $3 ",
+            array($allocation, $this->startDate, $this->endDate));
+ 
+        if (!$orderSumResult) {
+            throw new Exception(pg_last_error());
+        }
+        
+        $orderSum = pg_fetch_result($orderSumResult, 0, 0);
+        
+        $rebateSumResult = pg_query_params(
+           "SELECT SUM(rebate) " .
+            "FROM scrip_orders WHERE allocation = $1 " .
+            "AND order_date >= $2 AND order_date <= $3 ",
+            array($allocation, $this->startDate, $this->endDate));
+ 
+        if (!$rebateSumResult) {
+            throw new Exception(pg_last_error());
+        }
+        
+        $rebateSum = pg_fetch_result($rebateSumResult, 0, 0);
+        
+        return pg_fetch_all($result);
+    }
+    
     private function writeActiveStudentKsReloads() {    
         $count = 0;
         $sum = 0;
@@ -273,6 +359,76 @@ class BoostersActivityReport extends ActivityReport {
         }
     }
 
+    private function allocation2description($allocation, &$studentGetsShare) {
+        
+        $studentGetsShare = false;
+        $description = "";
+        switch ($allocation) {
+            case "activeStudent":
+                $description = "active student";
+                $studentGetsShare = true;
+                break;
+            case "inactiveStudent":
+                $description = "inactive student";
+                break;
+            case "unassigned":
+                $description = "no assigned student";
+                break;
+            case "unrecorded":
+                $description = "no recorded family";
+                break;
+        }
+        return $description;
+    }
+    
+    protected function writeScripOrders($allocation) {
+        $studentGetsShare = false;
+        $desc = $this->allocation2description($allocation, $studentGetsShare);
+        $count = 0;
+        $orderSum = 0;
+        $rebateSum = 0;
+        $orders = $this->getScripOrders($allocation, $count, $orderSum, $rebateSum);
+        if ($orderSum > 0) {
+            $this->writeCategoryHeader("Scrip orders with $desc", $count);
+            $this->writeScripHeaders();
+            foreach ($orders as $order) {
+                $this->writeScripOrder(
+                    $order['order_date'],
+                    $order['scrip_first'] . " " . $order['scrip_last'],
+                    $order['first'] . " " . $order['middle'] . " " . $order['last'],
+                    $order['order_amount'],
+                    $order['rebate']);
+            }
+            $this->writeUnderline();
+            $this->writeSubTotalHeaders();
+            $this->writeScripOrdersTotal("Total for scrip orders with $desc", $orderSum, $rebateSum, $studentGetsShare);
+        }
+    }
+    
+    protected function writeUnassignedScripOrders($allocation) {
+        $studentGetsShare = false;
+        $desc = $this->allocation2description($allocation, $studentGetsShare);
+        $count = 0;
+        $orderSum = 0;
+        $rebateSum = 0;
+        $orders = $this->getUnassignedScripOrders($allocation, $count, $orderSum, $rebateSum);
+        if ($orderSum > 0) {
+            $this->writeCategoryHeader("Scrip orders with $desc", $count);
+            $this->writeScripHeaders();
+            foreach ($orders as $order) {
+                $this->writeScripOrder(
+                    $order['order_date'],
+                    $order['scrip_first'] . " " . $order['scrip_last'],
+                    "",
+                    $order['order_amount'],
+                    $order['rebate']);
+            }
+            $this->writeUnderline();
+            $this->writeSubTotalHeaders();
+            $this->writeScripOrdersTotal("Total for scrip orders with $desc", $orderSum, $rebateSum, $studentGetsShare);
+        }
+    }
+    
     private function writeStudentCardHeaders()
     {
         $styleRab = "class='tg-rab'";
@@ -285,6 +441,37 @@ class BoostersActivityReport extends ActivityReport {
             "<td $styleLab>Student</td>" .    
             "<td $styleRab>Amount</td>" .
             "<td></td>" .
+            "<td></td>" .
+            "<td></td>" .
+        "</tr>";
+    }
+    
+    protected function writeScripHeaders()
+    {
+        $styleRab = "class='tg-rab'";
+        $styleLab = "class='tg-lab'";
+        
+        $this->table .=         
+        "<tr>" .
+            "<td $styleLab>Date</td>" .
+            "<td $styleLab>Family</td>" .
+            "<td $styleLab>Student</td>" .    
+            "<td $styleRab>Amount</td>" .
+            "<td $styleRab>Rebate</td>" .
+        "</tr>";
+    }
+    
+    private function writeScripOrder($date, $family, $student, $amount, $rebate) {
+        
+        $styleRa = "class='tg-ra'";
+        
+        $this->table .=
+        "<tr>" .
+            "<td>$date</td>" .
+            "<td>$family</td>" .
+            "<td>$student</td>" .
+            "<td $styleRa>$amount</td>" .
+            "<td $styleRa>$rebate</td>" .
             "<td></td>" .
             "<td></td>" .
         "</tr>";
@@ -386,6 +573,49 @@ class BoostersActivityReport extends ActivityReport {
         $this->writeLine();
     }
     
+    protected function writeScripOrdersTotal($description, $orderSum, $rebateSum, $studentGetsShare)
+    {
+        $styleLab = "class='tg-lab'";
+        $styleRab = "class='tg-rab'";
+        $styleRa  = "class='tg-ra'";
+        $styleB3sl = "class='tg-b3sl'";
+        $styleR3sl = "class='tg-r3sl'";
+               
+        if ($studentGetsShare) {
+            $studentShare = $rebateSum * RebatePercentages::$STUDENT_SHARE;
+            $studentShare = round($studentShare, 2);
+            $boostersShare = $rebateSum - $studentShare;
+        }
+        else {
+            $boostersShare = $rebateSum;
+            $studentShare = 0;
+        }
+        
+        $orderAmt = $this->format($orderSum);
+        $rebateAmt = $this->format($rebateSum);
+        $boostersShareAmt = $this->format($boostersShare);
+        $studentShareAmt = $this->format($studentShare);
+        
+        $this->table .=
+        "<tr>" .
+            "<td $styleRab colspan='3'>$description</td>" .
+            "<td $styleRa>$orderAmt</td>" .
+            "<td $styleRa>$rebateAmt</td>" .
+            "<td $styleRa>$boostersShareAmt</td>";
+        
+        if ($studentShare < 0) {
+            $this->table .=               
+            "<td $styleR3sl>$studentShareAmt</td>";
+        }
+        else {
+            $this->table .= 
+            "<td $styleB3sl>$studentShareAmt</td>";        
+        }
+        $this->table .= "</tr>";
+        
+        $this->writeLine();
+    }
+    
     protected function buildTable()
     {
         $this->table = "";
@@ -397,6 +627,12 @@ class BoostersActivityReport extends ActivityReport {
             $this->writeCardHolderKsReloads();
             $this->writeUnassignedCardKsReloads();
             $this->writeUnknownCardKsReloads();
+        }
+        if ($this->includeScrip) {
+            $this->writeScripOrders("activeStudent");
+            $this->writeScripOrders("inactiveStudent");
+            $this->writeUnassignedScripOrders("unassigned");
+
         }
     }
 }

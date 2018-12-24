@@ -19,6 +19,7 @@ class ScripOrder {
     private $orderAmount;
     private $rebate;
     private $student;
+    private $allocation;
     
     /**
      * 
@@ -38,6 +39,7 @@ class ScripOrder {
         if ($studentId){
             $this->student = new Student($studentId);
         }
+        $this->determineAllocation();
     }
     
     public function getFamilyFirst() {
@@ -146,45 +148,73 @@ class ScripOrder {
     }
             
     public function insertOrderToDb() {
-        
-        if ($this->student && $this->student->isActive())
-        {
-            $result = pg_query_params("INSERT INTO scrip_orders VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", 
-            array(
-                $this->orderId,
-                $this->orderCount,
-                $this->orderDate,
-                $this->orderAmount,
-                $this->rebate,
-                $this->familyFirst,
-                $this->familyLast,
-                $this->student->getId()
-                ));
-            if (!$result) {
-                throw new Exception(pg_last_error());
-            }
+       
+        $studentId = null;
+        if ($this->student) {
+            $studentId = $this->student->getId();
         }
-        else
-        {
-            $result = pg_query_params("INSERT INTO scrip_orders (order_id, order_count, "
-                . "order_date, order_amount, rebate, scrip_first, scrip_last) VALUES ($1, $2, $3, $4, $5, $6, $7)", 
-                array(
-                $this->orderId,
-                $this->orderCount,
-                $this->orderDate,
-                $this->orderAmount,
-                $this->rebate,
-                $this->familyFirst,
-                $this->familyLast
-                ));
-            if (!$result) {
-                throw new Exception(pg_last_error());
-            }
+        
+        $result = pg_query_params("INSERT INTO scrip_orders VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)", 
+        array(
+            $this->orderId,
+            $this->orderCount,
+            $this->orderDate,
+            $this->orderAmount,
+            $this->rebate,
+            $this->familyFirst,
+            $this->familyLast,
+            null,
+            $studentId,
+            $this->allocation
+            ));
+        if (!$result) {
+            throw new Exception(pg_last_error());
         }
     }
+        
     
     private function parseDate($dateStr) {
         $elements = explode(" ", $dateStr);
         return $elements[0];
+    }
+    
+    // find the matching family in the scrip_families table
+    // if it exists, is it assigned to a student?
+    private function familyExists() {
+        $result = pg_query_params(
+            "SELECT COUNT(family_last) FROM scrip_families " .
+            "WHERE family_first = $1 and family_last = $2",
+            array($this->familyFirst, $this->familyLast));
+        
+        if (!$result) {
+            throw new Exception("Family $this->familyFirst $this->familyLast is not recorded");
+        }
+        
+        $count = pg_fetch_result($result, 0, 0);
+        if ($count == 1) {
+            return true;
+        } 
+        else {
+            return false;
+        }
+    }
+    
+    private function determineAllocation() {
+        
+        $exists = $this->familyExists();
+        if (!$exists) {
+            $this->allocation = "unrecorded";
+        }
+        elseif ($this->student) {
+            if ($this->student->isActive()) {
+                $this->allocation = "activeStudent";
+            }
+            else {
+                $this->allocation = "inactiveStudent";
+            }
+        }
+        else {
+            $this->allocation = "unassigned";
+        }
     }
 }
