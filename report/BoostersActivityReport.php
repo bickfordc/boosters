@@ -702,12 +702,9 @@ class BoostersActivityReport extends ActivityReport {
     
     protected function writeWithdrawalsTotal($description, $total)
     {
-        $styleLab = "class='tg-lab'";
         $styleRab = "class='tg-rab'";
         $styleRa  = "class='tg-ra'";
-        $styleB3sl = "class='tg-b3sl'";
-        $styleR3sl = "class='tg-r3sl'";
-                      
+
         $totalAmt = $this->format($total);
         
         $this->table .=
@@ -738,7 +735,6 @@ class BoostersActivityReport extends ActivityReport {
         }
         if ($this->includeWithdrawals) {
             $this->writeStudentWithdrawals();
-                
         }
     }
 }
