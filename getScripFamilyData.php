@@ -35,7 +35,7 @@ else
     $where = getWhereClause();
     
     // Get the count of rows returned by the query so we can calculate total pages.
-    $sql = "SELECT family_first, family_last, family_active, family_notes, s.first, s.middle, s.last FROM scrip_families sf "
+    $sql = "SELECT family_first, family_last, family_notes, s.first, s.middle, s.last FROM scrip_families sf "
          . "LEFT JOIN students s ON sf.student=s.id";
     
     $countResult = queryPostgres($sql . $where, array());
@@ -76,8 +76,6 @@ else
         $s .= "<row id='". $row['family_last'].$row['family_first']."'>";            
         $s .= "<cell>". $row['family_first']."</cell>";
         $s .= "<cell>". $row['family_last']."</cell>";
-        $active = $row['family_active'] == 't' ? "true" : "false";
-        $s .= "<cell>".$active."</cell>";
         $s .= "<cell><![CDATA[". $row['family_notes']."]]></cell>";
         $s .= "<cell>". $row['first']."</cell>";
         $s .= "<cell>". $row['middle']."</cell>";

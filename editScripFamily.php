@@ -12,29 +12,21 @@ if ($op === "edit") {
     delFamily();
 }
 
-function addStudent() {
-    $first = sanitizeString($_POST['family_first']);
-    $last = sanitizeString($_POST['family_last']);
-    $middle = sanitizeString($_POST['middle']);
-    $active = sanitizeString($_POST['active']);
-    
-    $result = queryPostgres("INSERT INTO students (first, middle, last, active) VALUES ($1, $2, $3, $4)", 
-            array($first, $middle, $last, $active)); 
-}
-
 function editFamily() {
     $familyFirst = sanitizeString($_POST['family_first']);
     $familyLast = sanitizeString($_POST['family_last']);
-    $active = sanitizeString($_POST['family_active']);
+    //$active = sanitizeString($_POST['family_active']);
     $notes = sanitizeString($_POST['family_notes']);
         
-    $result = queryPostgres("UPDATE scrip_families SET family_active=$1, family_notes=$2 WHERE family_first=$3 AND family_last=$4", 
-            array($active, $notes, $familyFirst, $familyLast)); 
+    $result = queryPostgres("UPDATE scrip_families SET family_notes=$1 WHERE family_first=$2 AND family_last=$3", 
+            array($notes, $familyFirst, $familyLast)); 
 }
 
 function delFamily() {
+    $familyFirst = sanitizeString($_POST['family_first']);
+    $familyLast = sanitizeString($_POST['family_last']);
     $id = sanitizeString($_POST['id']);
     
-    $result = queryPostgres("DELETE FROM students WHERE id=$1", 
-            array($id)); 
+    $result = queryPostgres("DELETE FROM scrip_families WHERE family_first=$1 AND family_last=$2", 
+            array($familyFirst, $familyLast)); 
 }

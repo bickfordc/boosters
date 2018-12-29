@@ -3,22 +3,18 @@ $(function () {
         url: "getCardData.php",
         datatype: "xml",
         mtype: "GET",
-        colNames: ["Card Number", "Assigned", "Card Holder", "Notes", "Active", "Student First", "Student Middle", "Student Last"],
+        colNames: ["Card Number", "Assigned", "Card Holder", "Notes", "Student First", "Student Middle", "Student Last"],
         colModel: [
-            { name: "id", width: 100, editable:true },
-            { name: "sold", width: 50, editable: true, search: false, formatter: "checkbox",
+            { name: "id", width: 90, editable:true },
+            { name: "sold", width: 40, editable: true, search: false, formatter: "checkbox",
                 edittype: "checkbox", align: "center",
                 editoptions: { value: "true:false"} 
             },
-            { name: "card_holder", width: 60, editable: true },
-            { name: "notes", width: 40, editable: true },
-            { name: "active", width: 50, editable: true, search : false, formatter: "checkbox", 
-              edittype: "checkbox", align: "center",
-              editoptions: { value: "true:false"} 
-            },
-            { name: "first", width: 60 },
-            { name: "middle", width: 60 },
-            { name: "last", width: 60 }
+            { name: "card_holder", width: 70, editable: true },
+            { name: "notes", width: 80, editable: true },
+            { name: "first", width: 50 },
+            { name: "middle", width: 40 },
+            { name: "last", width: 50 }
         ],
         editurl: "editCardData.php",
         pager: "#pager",

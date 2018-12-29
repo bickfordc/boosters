@@ -35,7 +35,7 @@ else
     $where = getWhereClause();
     
     // Get the count of rows returned by the query so we can calculate total pages.
-    $sql = "SELECT c.id, c.sold, c.card_holder, c.notes, c.active, s.first, s.middle, s.last FROM cards c "
+    $sql = "SELECT c.id, c.sold, c.card_holder, c.notes, s.first, s.middle, s.last FROM cards c "
         . "LEFT JOIN student_cards sc ON sc.card=c.id "
         . "LEFT JOIN students s ON sc.student=s.id ";
     
@@ -80,8 +80,6 @@ else
         $s .= "<cell>".$sold."</cell>";
         $s .= "<cell><![CDATA[". $row['card_holder']."]]></cell>";
         $s .= "<cell><![CDATA[". $row['notes']."]]></cell>";
-        $active = $row['active'] == 't' ? "true" : "false";
-        $s .= "<cell>".$active."</cell>";
         $s .= "<cell>". $row['first']."</cell>";
         $s .= "<cell>". $row['middle']."</cell>";
         $s .= "<cell>". $row['last']."</cell>";

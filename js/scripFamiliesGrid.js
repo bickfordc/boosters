@@ -3,14 +3,10 @@ $(function () {
         url: "getScripFamilyData.php",
         datatype: "xml",
         mtype: "GET",
-        colNames: ["Family First", "Family Last", "Family Active", "Notes", "Student First", "Middle", "Student Last"],
+        colNames: ["Family First", "Family Last", "Notes", "Student First", "Middle", "Student Last"],
         colModel: [
             { name: "family_first", width: 60, editable: true, editoptions: {disabled: true} },
             { name: "family_last", width: 60, editable: true, editoptions: {disabled: true} },
-            { name: "family_active", width: 50, editable: true, formatter: "checkbox",
-                edittype: "checkbox", align: "center",
-                editoptions: { value: "true:false"} 
-            },
             { name: "family_notes", width: 80, editable: true},
             { name: "first", width: 60 },
             { name: "middle", width: 30 },
