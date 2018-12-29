@@ -218,9 +218,9 @@ EOF;
             "<td $styleLab>Date</td>" .
             "<td $styleLab>Card</td>" .
             "<td $styleRab>Amount</td>" .
-            "<td $styleRab>Rebate</td>" .
-            "<td $styleRab>Boosters Share</td>" .
-            "<td $styleRab>Student Share</td>" .
+            "<td></td>" .
+            "<td></td>" .
+            "<td></td>" .
         "</tr>";
     }
     
@@ -252,8 +252,8 @@ EOF;
             "<td $styleLab>Family</td>" .
             "<td $styleRab>Amount</td>" .
             "<td $styleRab>Rebate</td>" .
-            "<td $styleRab>Boosters Share</td>" .
-            "<td $styleRab>Student Share</td>" .
+            "<td></td>" .
+            "<td></td>" .
         "</tr>";
     }
     
@@ -268,40 +268,6 @@ EOF;
             "<td $styleLab>Purpose</td>" .
             "<td $styleLab colspan='3'>Notes</td>" .
             "<td $styleRab>Amount</td>" .
-        "</tr>";
-    }
-    
-    private function writeScripOrder($date, $family, $amount, $rebate) {
-        
-        $styleRa = "class='tg-ra'";
-        
-        $this->table .=
-        "<tr>" .
-            "<td>$date</td>" .
-            "<td>$family</td>" .
-            "<td $styleRa>$amount</td>" .
-            "<td $styleRa>$rebate</td>" .
-            "<td></td>" .
-            "<td></td>" .
-        "</tr>";
-    }
-    
-    private function writeCardReload($date, $card, $amount)
-    {
-        $styleRa = "class='tg-ra'";
-        
-        $rebate = $amount * RebatePercentages::$KS_CARD_RELOAD * RebatePercentages::$STUDENT_SHARE;
-        $amountStr = $this->format($amount);
-        $rebateStr = $this->format($rebate);
-        
-        $this->table .=
-        "<tr>" .
-            "<td>$date</td>" .
-            "<td>$card</td>" .
-            "<td $styleRa>$amountStr</td>" .
-            "<td $styleRa>$rebateStr</td>" .
-            "<td></td>" .
-            "<td></td>" .
         "</tr>";
     }
     
@@ -320,19 +286,26 @@ EOF;
         "</tr>";
     }
     
-    protected function writeCardsTotal($total)
+    protected function writeCardsTotal($colSpan, $description, $total, $studentGetsShare)
     {
-        $styleLab = "class='tg-lab'";
         $stylePlab = "class='tg-plab'";
+        $styleLab = "class='tg-lab'";
+        $styleRab = "class='tg-rab'";
         $styleRa  = "class='tg-ra'";
         $styleB3sl = "class='tg-b3sl'";
         $styleR3sl = "class='tg-r3sl'";
-        $styleB3sr = "class='tg-b3sr'";
-        $styleR3sr = "class='tg-r3sr'";
                
         $rebate = $total * RebatePercentages::$KS_CARD_RELOAD;
-        $boostersShare = $rebate * RebatePercentages::$BOOSTERS_SHARE;
-        $studentShare = $rebate * RebatePercentages::$STUDENT_SHARE;
+        $rebate = round($rebate, 2);
+        if ($studentGetsShare) {
+            $studentShare = $rebate * RebatePercentages::$STUDENT_SHARE;
+            $studentShare = round($studentShare, 2);
+            $boostersShare = $rebate - $studentShare;
+        }
+        else {
+            $boostersShare = $rebate;
+            $studentShare = 0;
+        }
         
         $totalAmt = $this->format($total);
         $rebateAmt = $this->format($rebate);
@@ -341,7 +314,7 @@ EOF;
         
         $this->table .=
         "<tr>" .
-            "<td $stylePlab colspan='2'>Total</td>" .
+            "<td $styleRab colspan='$colSpan'>$description</td>" .
             "<td $styleRa>$totalAmt</td>" .
             "<td $styleRa>$rebateAmt</td>" .
             "<td $styleRa>$boostersShareAmt</td>";
@@ -358,63 +331,7 @@ EOF;
         
         $this->writeLine();
     }
-    
-    protected function writeScripTotal($totalAmount, $totalRebate)
-    {
-        $styleLab = "class='tg-lab'";
-        $stylePlab = "class='tg-plab'";
-        $styleRa  = "class='tg-ra'";
-        $styleB3sl = "class='tg-b3sl'";
-        $styleR3sl = "class='tg-r3sl'";
-        $styleB3sr = "class='tg-b3sr'";
-        $styleR3sr = "class='tg-r3sr'";
-               
-        $boostersShare = $totalRebate * RebatePercentages::$BOOSTERS_SHARE;
-        $studentShare = $totalRebate * RebatePercentages::$STUDENT_SHARE;
-        
-        $totalAmt = $this->format($totalAmount);
-        $rebateAmt = $this->format($totalRebate);
-        $boostersShareAmt = $this->format($boostersShare);
-        $studentShareAmt = $this->format($studentShare);
-        
-        $this->table .=
-        "<tr>" .
-            "<td $stylePlab colspan='2'>Total</td>" .
-            "<td $styleRa>$totalAmt</td>" .
-            "<td $styleRa>$rebateAmt</td>" .
-            "<td $styleRa>$boostersShareAmt</td>" .
-            "<td $styleB3sl>$studentShareAmt</td>" .
-        "</tr>";     
- 
-        $this->writeLine();
-    }
-    
-    protected function writeStudentKsReloads($reloads) {
-        $total = 0;
-        foreach ($reloads as $reload) {
-            $this->writeCardReload($reload['reload_date'],
-                            $reload['card'],
-                            $reload['reload_amount']);
-            $total += $reload['reload_amount'];
-        }
-        $this->writeCardsTotal($total);
-    }
-         
-    protected function writeScripOrders($orders) {
-        $totalAmount = 0;
-        $totalRebate = 0;
-        foreach ($orders as $order) {
-            $this->writeScripOrder(
-                            $order['order_date'],
-                            $order['scrip_first'] . " " . $order['scrip_last'],
-                            $order['order_amount'],
-                            $order['rebate']);
-            $totalAmount += $order['order_amount'];
-            $totalRebate += $order['rebate'];
-        }
-        $this->writeScripTotal($totalAmount, $totalRebate);
-    }
-    
+                     
     protected function writeWithdrawals($debits) {
         $total = 0;
         foreach ($debits as $debit) {
@@ -433,10 +350,11 @@ EOF;
         
         $stylePlab = "class='tg-plab'";
         $styleRa  = "class='tg-ra'";
+        $styleRab = "class='tg-rab'";
         
         $this->table .=
         "<tr>" .
-            "<td $stylePlab colspan='2'>Total</td>" .
+            "<td $styleRab colspan='2'>Total</td>" .
             "<td $styleRa colspan='4'>$totalAmt</td>" .
         "</tr>";
     }

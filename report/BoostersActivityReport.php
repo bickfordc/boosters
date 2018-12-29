@@ -302,7 +302,7 @@ class BoostersActivityReport extends ActivityReport {
             }
             $this->writeUnderline();
             $this->writeSubTotalHeaders();
-            $this->writeCardsTotal("Total for active students", $sum, true);
+            $this->writeCardsTotal(3, "Total for active students", $sum, true);
         }
     }
        
@@ -322,7 +322,7 @@ class BoostersActivityReport extends ActivityReport {
             }
             $this->writeUnderline();
             $this->writeSubTotalHeaders();
-            $this->writeCardsTotal("Total for inactive students", $sum, false);
+            $this->writeCardsTotal(3, "Total for inactive students", $sum, false);
         }
     }
     
@@ -342,7 +342,7 @@ class BoostersActivityReport extends ActivityReport {
             }
             $this->writeUnderline();
             $this->writeSubTotalHeaders();
-            $this->writeCardsTotal("Total for card holders", $sum, false);
+            $this->writeCardsTotal(3, "Total for card holders", $sum, false);
         }
     }
 
@@ -363,7 +363,7 @@ class BoostersActivityReport extends ActivityReport {
             }
             $this->writeUnderline();
             $this->writeSubTotalHeaders();
-            $this->writeCardsTotal("Total for unassigned cards", $sum, false);
+            $this->writeCardsTotal(3, "Total for unassigned cards", $sum, false);
         }
     }
     
@@ -384,7 +384,7 @@ class BoostersActivityReport extends ActivityReport {
             }
             $this->writeUnderline();
             $this->writeSubTotalHeaders();
-            $this->writeCardsTotal("Total for unrecorded cards", $sum, false);
+            $this->writeCardsTotal(3, "Total for unrecorded cards", $sum, false);
         }
     }
 
@@ -612,50 +612,7 @@ class BoostersActivityReport extends ActivityReport {
         "</tr>";
     }
     
-    protected function writeCardsTotal($description, $total, $studentGetsShare)
-    {
-        $styleLab = "class='tg-lab'";
-        $styleRab = "class='tg-rab'";
-        $styleRa  = "class='tg-ra'";
-        $styleB3sl = "class='tg-b3sl'";
-        $styleR3sl = "class='tg-r3sl'";
-               
-        $rebate = $total * RebatePercentages::$KS_CARD_RELOAD;
-        $rebate = round($rebate, 2);
-        if ($studentGetsShare) {
-            $studentShare = $rebate * RebatePercentages::$STUDENT_SHARE;
-            $studentShare = round($studentShare, 2);
-            $boostersShare = $rebate - $studentShare;
-        }
-        else {
-            $boostersShare = $rebate;
-            $studentShare = 0;
-        }
-        
-        $totalAmt = $this->format($total);
-        $rebateAmt = $this->format($rebate);
-        $boostersShareAmt = $this->format($boostersShare);
-        $studentShareAmt = $this->format($studentShare);
-        
-        $this->table .=
-        "<tr>" .
-            "<td $styleRab colspan='3'>$description</td>" .
-            "<td $styleRa>$totalAmt</td>" .
-            "<td $styleRa>$rebateAmt</td>" .
-            "<td $styleRa>$boostersShareAmt</td>";
-        
-        if ($studentShare < 0) {
-            $this->table .=               
-            "<td $styleR3sl>$studentShareAmt</td>";
-        }
-        else {
-            $this->table .= 
-            "<td $styleB3sl>$studentShareAmt</td>";        
-        }
-        $this->table .= "</tr>";
-        
-        $this->writeLine();
-    }
+
     
     protected function writeScripOrdersTotal($description, $orderSum, $rebateSum, $studentGetsShare)
     {

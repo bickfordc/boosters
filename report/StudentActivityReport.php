@@ -162,4 +162,116 @@ class StudentActivityReport extends ActivityReport {
             return row[0];
         } 
     }
+        
+    private function writeCardReload($date, $card, $amount)
+    {
+        $styleRa = "class='tg-ra'";
+        $amountStr = $this->format($amount);
+      
+        $this->table .=
+        "<tr>" .
+            "<td>$date</td>" .
+            "<td>$card</td>" .
+            "<td $styleRa>$amountStr</td>" .
+            "<td></td>" .
+            "<td></td>" .
+            "<td></td>" .
+        "</tr>";
+    }
+    
+    private function writeStudentKsReloads($reloads) {
+        $total = 0;
+        foreach ($reloads as $reload) {
+            $this->writeCardReload($reload['reload_date'],
+                            $reload['card'],
+                            $reload['reload_amount']);
+            $total += $reload['reload_amount'];
+        }
+        $this->writeSubTotalHeaders();
+        $this->writeCardsTotal(2, "Total", $total, $this->student->isActive());
+    }
+    
+    private function writeScripOrders($orders) {
+        $totalAmount = 0;
+        $totalRebate = 0;
+        foreach ($orders as $order) {
+            $this->writeScripOrder(
+                            $order['order_date'],
+                            $order['scrip_first'] . " " . $order['scrip_last'],
+                            $order['order_amount'],
+                            $order['rebate']);
+            $totalAmount += $order['order_amount'];
+            $totalRebate += $order['rebate'];
+        }
+        $this->writeSubTotalHeaders();
+        $this->writeScripTotal($totalAmount, $totalRebate, $this->student->isActive());
+    }
+    
+    protected function writeScripTotal($totalAmount, $totalRebate, $studentGetsShare)
+    {
+        $styleLab = "class='tg-lab'";
+        $stylePlab = "class='tg-plab'";
+        $styleRa  = "class='tg-ra'";
+        $styleRab = "class='tg-rab'";
+        $styleB3sl = "class='tg-b3sl'";
+        $styleR3sl = "class='tg-r3sl'";
+        $styleB3sr = "class='tg-b3sr'";
+        $styleR3sr = "class='tg-r3sr'";
+               
+        if ($studentGetsShare) {
+            $studentShare = $totalRebate * RebatePercentages::$STUDENT_SHARE;
+            $boostersShare = $totalRebate - $studentShare;
+        }
+        else {
+           $studentShare = 0; 
+           $boostersShare = $totalRebate;
+        }
+        
+        $totalAmt = $this->format($totalAmount);
+        $rebateAmt = $this->format($totalRebate);
+        $boostersShareAmt = $this->format($boostersShare);
+        $studentShareAmt = $this->format($studentShare);
+        
+        $this->table .=
+        "<tr>" .
+            "<td $styleRab colspan='2'>Total</td>" .
+            "<td $styleRa>$totalAmt</td>" .
+            "<td $styleRa>$rebateAmt</td>" .
+            "<td $styleRa>$boostersShareAmt</td>" .
+            "<td $styleB3sl>$studentShareAmt</td>" .
+        "</tr>";     
+ 
+        $this->writeLine();
+    }
+    
+    private function writeScripOrder($date, $family, $amount, $rebate) {
+        
+        $styleRa = "class='tg-ra'";
+        
+        $this->table .=
+        "<tr>" .
+            "<td>$date</td>" .
+            "<td>$family</td>" .
+            "<td $styleRa>$amount</td>" .
+            "<td $styleRa>$rebate</td>" .
+            "<td></td>" .
+            "<td></td>" .
+        "</tr>";
+    }
+    
+    protected function writeSubTotalHeaders()
+    {
+        $styleRab = "class='tg-rab'";
+        $styleLab = "class='tg-lab'";
+        
+        $this->table .=         
+        "<tr>" .
+            "<td></td>" .
+            "<td></td>" .
+            "<td $styleRab>Amount</td>" .
+            "<td $styleRab>Rebate</td>" .
+            "<td $styleRab>Boosters Share</td>" .
+            "<td $styleRab>Student Share</td>" .
+        "</tr>";
+    }
 }
