@@ -12,6 +12,7 @@
     $user = "";
     $allegedPw = "";
     $resetAllowed = false;
+    $message = "";
         
     if (isset($_GET['code']) && isset($_GET['user']))
     {
@@ -80,15 +81,13 @@
         {
             $user = $_SESSION['user'];
             validateAndChangePassword($user, $newPw1, $newPw2, $error);
+            $message = "Password changed.";
         }
     }    
 
-
-    
-
-    
     echo <<<_END
     <script src='passwordMatch.js'></script>
+    <p class='pageMessage'>$message</p>
     <div class="reset-page">
       <div class="form">
        <form id='resetForm' class='reset-form' method='post' action='changePassword.php'>
