@@ -2,3 +2,5 @@ vendor/
 pdfsrc.html
 RebateReport - Copy.php
 /nbproject/private/
+.vscode/
+composer.phar

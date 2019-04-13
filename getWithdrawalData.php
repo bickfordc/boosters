@@ -127,7 +127,7 @@ function getWhereClause() {
         }
         $searchQuery = $_GET['searchString'];
         $searchOp = $_GET['searchOper'];
-        $where = "WHERE ";
+        $where = " WHERE ";
         
         switch ($searchOp) {
             

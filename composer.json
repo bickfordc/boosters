@@ -1,8 +1,6 @@
 {
     "require": {
         "phpmailer/phpmailer": "~5.2",
-        "spipu/html2pdf": "4.6.0",
-        "sendgrid/sendgrid": "~4.0",
-        "mikehaertl/phpwkhtmltopdf": "^2.2"
+        "sendgrid/sendgrid": "~4.0"
     }
 }

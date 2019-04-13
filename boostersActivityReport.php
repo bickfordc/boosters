@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $endDate = trim(sanitizeString($_POST[ 'endDate' ]));
     $kscards = trim(sanitizeString($_POST[ 'kscards' ]));
     $scrip = trim(sanitizeString($_POST[ 'scrip' ]));
+    $deposits = trim(sanitizeString($_POST[ 'deposits' ]));
     $withdrawals = trim(sanitizeString($_POST[ 'withdrawals' ]));
     
     if (empty($startDate) || empty($endDate)) {
@@ -31,6 +32,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if ($scrip == "on") {
        $includeScrip = true; 
+    }
+    if ($deposits == "on") {
+        $includeDeposits = true; 
     }
     if ($withdrawals == "on") {
         $includeWithdrawals = true;
@@ -60,6 +64,10 @@ if ($gatheredRequirements == false) {
         </div>
         <div>
         <label>
+          <input type="checkbox" name="deposits" id="deposits" checked/>Direct student deposits</label>
+        </div>
+        <div>
+        <label>
           <input type="checkbox" name="withdrawals" id="withdrawals" checked/>Student withdrawals</label>
         </div>
         <button>Run activity report</button>
@@ -82,6 +90,7 @@ else {
 //        "window.location.href = 'index.php'" .
 //      "});" .
 //    "</script>";
-    $report = new BoostersActivityReport($startDate, $endDate, $includeKsCards, $includeScrip, $includeWithdrawals);
+    $report = new BoostersActivityReport($startDate, $endDate,
+                                         $includeKsCards, $includeScrip, $includeDeposits, $includeWithdrawals);
     echo $report->getTable();   
 } 

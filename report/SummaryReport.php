@@ -155,6 +155,13 @@ class SummaryReport extends ActivityReport{
         $this->writeLine();
     }
     
+    private function writeDirectStudentDeposits() {
+        $this->writeCategoryHeader("Direct Student Deposits");
+        $this->writeSummaryHeaders();
+        $this->writeOrderTotals();
+        $this->writeLine();
+    }
+
     private function writeRevenue() {
         $this->writeCategoryHeader("Total Deposits");
         $this->writeSummaryHeaders();
@@ -274,6 +281,7 @@ class SummaryReport extends ActivityReport{
         $this->writeNameDateTitle("Boosters Summary");
         $this->writeReloads();
         $this->writeOrders();
+        //$this->writeDirectStudentDeposits();
         $this->writeRevenue();
         $this->writeTotalWithdrawals();
     }

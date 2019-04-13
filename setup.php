@@ -174,6 +174,19 @@ EOF;
     
     postgres_query($sql);
     
+    $sql =<<<EOF
+
+    CREATE TABLE IF NOT EXISTS student_deposits
+      (id SERIAL PRIMARY KEY,
+       student integer REFERENCES students (id),
+       amount numeric (10,2),
+       notes varchar(80),
+       date date
+      );
+EOF;
+
+    postgres_query($sql);
+
   function postgres_query($sql) {
     $ret = pg_query($sql);
     if(!$ret){

@@ -34,6 +34,8 @@
          "<li><a href='studentData.php'>Show students</a></li>" .
          "<li><a href='withdrawal.php'>Make a student withdrawal</a></li>" .
          "<li><a href='withdrawalData.php'>Show student withdrawals</a></li>" .
+         "<li><a href='deposit.php'>Make a student deposit</a></li>" .
+         "<li><a href='depositData.php'>Show student deposits</a></li>" .
          "</ul></li>" .
        "<li><a href='index.php'>CARDS</a>" .
          "<ul><li><a href='newCards.php'>Add new cards</a></li>" .

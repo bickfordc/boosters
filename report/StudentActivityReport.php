@@ -17,6 +17,8 @@ class StudentActivityReport extends ActivityReport {
     private $scripRebateTotal;
     private $withdrawals;
     private $withdrawalTotal;
+    private $deposits;
+    private $depositTotal;
     
     function __construct($studentId, $startDate, $endDate) {
         
@@ -32,6 +34,9 @@ class StudentActivityReport extends ActivityReport {
         
         $this->withdrawals = $this->getWithdrawals();
         $this->withdrawalTotal = $this->getWithdrawalTotal();
+
+        $this->deposits = $this->getDeposits();
+        $this->depositTotal = $this->getDepositTotal();
     }
     
  
@@ -41,7 +46,6 @@ class StudentActivityReport extends ActivityReport {
         $this->table = "";
         $this->startTable();
         $this->writeNameDateTitle($this->student->getFullName());
-        //$this->writeDate();
         
         $this->writeCategoryHeader("King Soopers");
         $this->writeCardHeaders();
@@ -51,6 +55,10 @@ class StudentActivityReport extends ActivityReport {
         $this->writeScripHeaders();
         $this->writeScripOrders($this->scripOrders);
         
+        $this->writeCategoryHeader("Direct student deposits");
+        $this->writeDepositHeaders();
+        $this->writeDeposits($this->deposits);
+
         $this->writeCategoryHeader("Withdrawals");
         $this->writeWithdrawalHeaders();
         $this->writeWithdrawals($this->withdrawals);
@@ -143,7 +151,7 @@ class StudentActivityReport extends ActivityReport {
         return pg_fetch_all($result);
     }
     
-        private function getWithdrawalTotal() {
+    private function getWithdrawalTotal() {
         // sum the rebate column
         $result = pg_query_params(
             "SELECT SUM(amount) FROM student_withdrawals WHERE student=$1 " .
@@ -162,7 +170,42 @@ class StudentActivityReport extends ActivityReport {
             return row[0];
         } 
     }
+
+    private function getDeposits() {
+        // Get all withdrawals for this student that are in the date range
+        $result = pg_query_params(
+            "SELECT * from student_deposits WHERE student=$1 " . 
+            "AND date>=$2 AND date<=$3 " .
+            "ORDER BY date ASC", 
+            array($this->studentId, $this->startDate, $this->endDate));
         
+        if (!$result) {
+            throw new Exception(pg_last_error());
+        }
+        
+        return pg_fetch_all($result);
+    }
+    
+    private function getDepositTotal() {
+        // sum the rebate column
+        $result = pg_query_params(
+            "SELECT SUM(amount) FROM student_deposits WHERE student=$1 " .
+            "AND date>=$2 AND date<=$3",
+            array($this->studentId, $this->startDate, $this->endDate));
+        
+        if (!$result) {
+            throw new Exception(pg_last_error());
+        }
+        
+        $row = pg_fetch_row($result);
+        if ($row[0] == NULL) {
+            return 0;
+        }
+        else {
+            return row[0];
+        } 
+    }
+
     private function writeCardReload($date, $card, $amount)
     {
         $styleRa = "class='tg-ra'";

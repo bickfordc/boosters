@@ -8,13 +8,16 @@ class BoostersActivityReport extends ActivityReport {
     private $includeKsCards;
     private $includeScrip;
     private $includeWithdrawals;
+    private $includeDeposits;
     
-    function __construct($startDate, $endDate, $includeKsCards, $includeScrip, $includeWithdrawals) {
+    function __construct($startDate, $endDate, 
+                         $includeKsCards, $includeScrip, $includeDeposits, $includeWithdrawals) {
 
         parent::__construct($startDate, $endDate);  
 
         $this->includeKsCards = $includeKsCards;
         $this->includeScrip = $includeScrip;
+        $this->includeDeposits = $includeDeposits;
         $this->includeWithdrawals = $includeWithdrawals;
     }
                           
@@ -285,6 +288,35 @@ class BoostersActivityReport extends ActivityReport {
         
         return pg_fetch_all($result);
     }
+
+    private function getStudentDeposits(&$count, &$sum) {
+        $result = pg_query_params(
+            "SELECT d.date, st.first, st.middle, st.last, d.notes, d.amount " .
+            "FROM student_deposits AS d INNER JOIN students AS st " .
+            "ON d.student = st.id " .
+            "WHERE date>=$1 AND date<=$2 " .
+            "ORDER BY st.last, st.first, st.middle, d.date",
+            array($this->startDate, $this->endDate));
+             
+        if (!$result) {
+            throw new Exception(pg_last_error());
+        }
+        
+        $count = pg_num_rows($result);
+        
+        $sumResult = pg_query_params(
+            "SELECT SUM(amount) FROM student_deposits " .
+            "WHERE date>=$1 AND date<=$2",
+            array($this->startDate, $this->endDate));
+        
+        if (!$sumResult) {
+            throw new Exception(pg_last_error());
+        }
+        
+        $sum = pg_fetch_result($sumResult, 0, 0);
+        
+        return pg_fetch_all($result);
+    }
     
     private function writeActiveStudentKsReloads() {    
         $count = 0;
@@ -474,10 +506,29 @@ class BoostersActivityReport extends ActivityReport {
                     $wd['amount']);
             }
             $this->writeUnderline();
-            $this->writeWithdrawalsTotal("Total student withdrawals", $sum);
+            $this->writeTransactionsTotal("Total student withdrawals", $sum);
         }
     }
     
+    private function writeStudentDeposits() {
+        $count = 0;
+        $sum = 0;
+        $deposits = $this->getStudentDeposits($count, $sum);
+        if ($sum > 0) {
+            $this->writeCategoryHeader("Direct student deposits", $count);
+            $this->writeDepositHeaders();
+            foreach ($deposits as $d) {
+                $this->writeDeposit(
+                    $d['date'],
+                    $d['first'] . " " . $d['middle'] . " " . $d['last'],
+                    $d['notes'],
+                    $d['amount']);
+            }
+            $this->writeUnderline();
+            $this->writeTransactionsTotal("Total direct student deposits", $sum);
+        }
+    }
+
     private function writeStudentCardHeaders()
     {
         $styleRab = "class='tg-rab'";
@@ -527,6 +578,23 @@ class BoostersActivityReport extends ActivityReport {
         "</tr>";
     }
     
+    protected function writeDepositHeaders()
+    {
+        $styleRab = "class='tg-rab'";
+        $styleLab = "class='tg-lab'";
+        
+        $this->table .=         
+        "<tr>" .
+            "<td $styleLab>Date</td>" .
+            "<td $styleLab>Student</td>" .
+            "<td></td>" .
+            "<td $styleLab>Notes</td>" .
+            "<td></td>" .
+            "<td></td>" .
+            "<td $styleRab>Amount</td>" .
+        "</tr>";
+    }
+
     private function writeScripOrder($date, $family, $student, $amount, $rebate) {
         
         $styleRa = "class='tg-ra'";
@@ -612,7 +680,23 @@ class BoostersActivityReport extends ActivityReport {
         "</tr>";
     }
     
-
+    private function writeDeposit($date, $student, $notes, $amount)
+    {
+        $styleRa = "class='tg-ra'";
+        
+        $amountStr = $this->format($amount);
+        
+        $this->table .=
+        "<tr>" .
+            "<td>$date</td>" .
+            "<td>$student</td>" .
+            "<td></td>" .
+            "<td>$notes</td>" .
+            "<td></td>" .
+            "<td></td>" .
+            "<td $styleRa>$amountStr</td>" .
+        "</tr>";
+    }
     
     protected function writeScripOrdersTotal($description, $orderSum, $rebateSum, $studentGetsShare)
     {
@@ -657,7 +741,7 @@ class BoostersActivityReport extends ActivityReport {
         $this->writeLine();
     }
     
-    protected function writeWithdrawalsTotal($description, $total)
+    protected function writeTransactionsTotal($description, $total)
     {
         $styleRab = "class='tg-rab'";
         $styleRa  = "class='tg-ra'";
@@ -670,7 +754,7 @@ class BoostersActivityReport extends ActivityReport {
             "<td $styleRa>$totalAmt</td>" .
         "</tr>";
         
-        //$this->writeLine();
+        $this->writeLine();
     }
     
     protected function buildTable()
@@ -689,6 +773,9 @@ class BoostersActivityReport extends ActivityReport {
             $this->writeScripOrders("activeStudent");
             $this->writeScripOrders("inactiveStudent");
             $this->writeUnassignedScripOrders("unassigned");
+        }
+        if ($this->includeDeposits) {
+            $this->writeStudentDeposits();
         }
         if ($this->includeWithdrawals) {
             $this->writeStudentWithdrawals();

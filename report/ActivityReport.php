@@ -271,6 +271,19 @@ EOF;
         "</tr>";
     }
     
+    protected function writeDepositHeaders()
+    {
+        $styleRab = "class='tg-rab'";
+        $styleLab = "class='tg-lab'";
+        
+        $this->table .=         
+        "<tr>" .
+            "<td $styleLab colspan='2'>Date</td>" .
+            "<td $styleLab colspan='3'>Notes</td>" .
+            "<td $styleRab>Amount</td>" .
+        "</tr>";
+    }
+
     private function writeWithdrawal($date, $purpose, $notes, $amount)
     {
         $styleRa = "class='tg-ra'";
@@ -286,6 +299,20 @@ EOF;
         "</tr>";
     }
     
+    private function writeDeposit($date, $notes, $amount)
+    {
+        $styleRa = "class='tg-ra'";
+        
+        $amountStr = $this->format($amount);
+        
+        $this->table .=
+        "<tr>" .
+            "<td colSpan='2'>$date</td>" .
+            "<td colSpan='3'>$notes</td>" .
+            "<td $styleRa>$amountStr</td>" .
+        "</tr>";
+    }
+
     protected function writeCardsTotal($colSpan, $description, $total, $studentGetsShare)
     {
         $stylePlab = "class='tg-plab'";
@@ -359,6 +386,34 @@ EOF;
         "</tr>";
     }
     
+    protected function writeDeposits($credits) {
+        $total = 0;
+        foreach ($credits as $credit) {
+            $this->writeDeposit(
+                            $credit['date'],
+                            $credit['notes'],
+                            $credit['amount']);
+            $total += $credit['amount'];
+        }
+        $this->writeDepositTotal($total);
+    }
+    
+    private function writeDepositTotal($total) {
+        $totalAmt = $this->format($total);
+        
+        $stylePlab = "class='tg-plab'";
+        $styleRa  = "class='tg-ra'";
+        $styleRab = "class='tg-rab'";
+        
+        $this->table .=
+        "<tr>" .
+            "<td $styleRab colspan='2'>Total</td>" .
+            "<td $styleRa colspan='4'>$totalAmt</td>" .
+        "</tr>";
+
+        $this->writeLine();
+    }
+
     protected function buildTable()
     {
         $this->table = "";
